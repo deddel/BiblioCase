@@ -1,8 +1,18 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BiblioCase.Api", "BiblioCase.Api\BiblioCase.Api.csproj", "{A6037510-9B3D-4B2D-AC6D-0D98112D273B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BiblioCase.Application", "BiblioCase.Application\BiblioCase.Application.csproj", "{B559DD3B-9090-4C2A-93AE-32D0471C3A75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BiblioCase.Domain", "BiblioCase.Domain\BiblioCase.Domain.csproj", "{B688EA11-4EFC-46D7-A1B6-8A996AA910C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BiblioCase.Infrastructure", "BiblioCase.Infrastructure\BiblioCase.Infrastructure.csproj", "{0700CDAC-0DF8-40EB-9C50-45811266553E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BiblioCase.Web", "BiblioCase.Web\BiblioCase.Web.csproj", "{48979D4B-895E-45CE-9455-BD5AA2740D86}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -10,5 +20,27 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A6037510-9B3D-4B2D-AC6D-0D98112D273B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6037510-9B3D-4B2D-AC6D-0D98112D273B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6037510-9B3D-4B2D-AC6D-0D98112D273B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6037510-9B3D-4B2D-AC6D-0D98112D273B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B559DD3B-9090-4C2A-93AE-32D0471C3A75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B559DD3B-9090-4C2A-93AE-32D0471C3A75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B559DD3B-9090-4C2A-93AE-32D0471C3A75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B559DD3B-9090-4C2A-93AE-32D0471C3A75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B688EA11-4EFC-46D7-A1B6-8A996AA910C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B688EA11-4EFC-46D7-A1B6-8A996AA910C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B688EA11-4EFC-46D7-A1B6-8A996AA910C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B688EA11-4EFC-46D7-A1B6-8A996AA910C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0700CDAC-0DF8-40EB-9C50-45811266553E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0700CDAC-0DF8-40EB-9C50-45811266553E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0700CDAC-0DF8-40EB-9C50-45811266553E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0700CDAC-0DF8-40EB-9C50-45811266553E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48979D4B-895E-45CE-9455-BD5AA2740D86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48979D4B-895E-45CE-9455-BD5AA2740D86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48979D4B-895E-45CE-9455-BD5AA2740D86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48979D4B-895E-45CE-9455-BD5AA2740D86}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
