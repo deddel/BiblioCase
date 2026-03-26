@@ -1,5 +1,6 @@
 using BiblioCase.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using BiblioCase.Application.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,23 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast")
 .WithOpenApi();
+
+
+app.MapGet("/books", async (AppDbContext db) =>
+{
+    var books = await db.Books
+        .Include(b => b.Author)
+        .Select(b => new BookDto
+        {
+            Id = b.Id,
+            Title = b.Title,
+            Author = b.Author!.Name
+        })
+        .ToListAsync();
+
+    return Results.Ok(books);
+});
+
 
 app.Run();
 
