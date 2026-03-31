@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BiblioCase.Infrastructure", "BiblioCase.Infrastructure\BiblioCase.Infrastructure.csproj", "{0700CDAC-0DF8-40EB-9C50-45811266553E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BiblioCase.Web", "BiblioCase.Web\BiblioCase.Web.csproj", "{48979D4B-895E-45CE-9455-BD5AA2740D86}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BiblioCase.Tests", "BiblioCase.Tests\BiblioCase.Tests.csproj", "{A1467AF1-3A86-42EC-A3D2-77B36A1BDCA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,5 +44,9 @@ Global
 		{48979D4B-895E-45CE-9455-BD5AA2740D86}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48979D4B-895E-45CE-9455-BD5AA2740D86}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48979D4B-895E-45CE-9455-BD5AA2740D86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1467AF1-3A86-42EC-A3D2-77B36A1BDCA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1467AF1-3A86-42EC-A3D2-77B36A1BDCA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1467AF1-3A86-42EC-A3D2-77B36A1BDCA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1467AF1-3A86-42EC-A3D2-77B36A1BDCA3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
