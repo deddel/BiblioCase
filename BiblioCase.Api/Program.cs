@@ -1,6 +1,7 @@
 using BiblioCase.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using BiblioCase.Application.DTOs;
+using BiblioCase.Application.Books;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddScoped<GetBooksHandler>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -44,19 +45,21 @@ app.MapGet("/weatherforecast", () =>
 .WithOpenApi();
 
 
-app.MapGet("/books", async (AppDbContext db) =>
+app.MapGet("/books", async (GetBooksHandler handler) =>
 {
-    var books = await db.Books
-        .Include(b => b.Author)
-        .Select(b => new BookDto
-        {
-            Id = b.Id,
-            Title = b.Title,
-            Author = b.Author!.Name
-        })
-        .ToListAsync();
-
+    var books = await handler.Handle();
     return Results.Ok(books);
+    // var books = await db.Books
+    //     .Include(b => b.Author)
+    //     .Select(b => new BookDto
+    //     {
+    //         Id = b.Id,
+    //         Title = b.Title,
+    //         Author = b.Author!.Name
+    //     })
+    //     .ToListAsync();
+
+    // return Results.Ok(books);
 });
 
 
