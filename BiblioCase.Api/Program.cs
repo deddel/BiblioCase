@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using BiblioCase.Application.Books;
 using BiblioCase.Application.Weather;
 using BiblioCase.Application.DTOs;
+using BiblioCase.Application.Authors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,7 @@ builder.Services.AddScoped<GetBookByIdHandler>();
 builder.Services.AddScoped<CreateBookHandler>();
 builder.Services.AddScoped<UpdateBookHandler>();
 builder.Services.AddScoped<DeleteBookHandler>();
+builder.Services.AddScoped<GetAuthorsHandler>();
 builder.Services.AddScoped<GetWeatherForecastHandler>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -94,6 +96,12 @@ app.MapDelete("/books/{id:int}", async (int id, DeleteBookHandler handler) =>
     }
 
     return Results.NoContent();
+});
+
+app.MapGet("/authors", async (GetAuthorsHandler handler) =>
+{
+    var authors = await handler.Handle();
+    return Results.Ok(authors);
 });
 
 

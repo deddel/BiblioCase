@@ -38,3 +38,8 @@ Content-Type: application/json
 DELETE {{BiblioCase.Api_HostAddress}}/books/1
 
 ###
+
+GET {{BiblioCase.Api_HostAddress}}/authors
+Accept: application/json
+
+###
