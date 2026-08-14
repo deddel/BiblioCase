@@ -4,3 +4,37 @@ GET {{BiblioCase.Api_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+GET {{BiblioCase.Api_HostAddress}}/books
+Accept: application/json
+
+###
+
+GET {{BiblioCase.Api_HostAddress}}/books/1
+Accept: application/json
+
+###
+
+POST {{BiblioCase.Api_HostAddress}}/books
+Content-Type: application/json
+
+{
+  "title": "New book",
+  "authorName": "New author"
+}
+
+###
+
+PUT {{BiblioCase.Api_HostAddress}}/books/1
+Content-Type: application/json
+
+{
+  "title": "Updated book",
+  "authorName": "Updated author"
+}
+
+###
+
+DELETE {{BiblioCase.Api_HostAddress}}/books/1
+
+###

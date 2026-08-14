@@ -2,6 +2,7 @@ using BiblioCase.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using BiblioCase.Application.Books;
 using BiblioCase.Application.Weather;
+using BiblioCase.Application.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<GetBooksHandler>();
+builder.Services.AddScoped<GetBookByIdHandler>();
+builder.Services.AddScoped<CreateBookHandler>();
+builder.Services.AddScoped<UpdateBookHandler>();
+builder.Services.AddScoped<DeleteBookHandler>();
 builder.Services.AddScoped<GetWeatherForecastHandler>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -36,6 +41,59 @@ app.MapGet("/books", async (GetBooksHandler handler) =>
 {
     var books = await handler.Handle();
     return Results.Ok(books);
+});
+
+app.MapGet("/books/{id:int}", async (int id, GetBookByIdHandler handler) =>
+{
+    var book = await handler.Handle(id);
+
+    if (book is null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(book);
+});
+
+app.MapPost("/books", async (CreateBookRequest request, CreateBookHandler handler) =>
+{
+    var book = await handler.Handle(request);
+
+    if (book is null)
+    {
+        return Results.BadRequest();
+    }
+
+    return Results.Created($"/books/{book.Id}", book);
+});
+
+app.MapPut("/books/{id:int}", async (int id, UpdateBookRequest request, UpdateBookHandler handler) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.AuthorName))
+    {
+        return Results.BadRequest();
+    }
+
+    var book = await handler.Handle(id, request);
+
+    if (book is null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(book);
+});
+
+app.MapDelete("/books/{id:int}", async (int id, DeleteBookHandler handler) =>
+{
+    var deleted = await handler.Handle(id);
+
+    if (!deleted)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.NoContent();
 });
 
 
