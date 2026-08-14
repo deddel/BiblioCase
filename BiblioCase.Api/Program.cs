@@ -1,7 +1,7 @@
 using BiblioCase.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using BiblioCase.Application.DTOs;
 using BiblioCase.Application.Books;
+using BiblioCase.Application.Weather;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<GetBooksHandler>();
+builder.Services.AddScoped<GetWeatherForecastHandler>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -24,47 +25,18 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+app.MapGet("/weatherforecast", (GetWeatherForecastHandler handler) =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    var forecast = handler.Handle();
+    return Results.Ok(forecast);
 })
 .WithName("GetWeatherForecast");
-
 
 app.MapGet("/books", async (GetBooksHandler handler) =>
 {
     var books = await handler.Handle();
     return Results.Ok(books);
-    // var books = await db.Books
-    //     .Include(b => b.Author)
-    //     .Select(b => new BookDto
-    //     {
-    //         Id = b.Id,
-    //         Title = b.Title,
-    //         Author = b.Author!.Name
-    //     })
-    //     .ToListAsync();
-
-    // return Results.Ok(books);
 });
 
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
