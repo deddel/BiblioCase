@@ -1,6 +1,5 @@
 using BiblioCase.Application.DTOs;
 using BiblioCase.Infrastructure;
-using BiblioCase.Domain;
 using Microsoft.EntityFrameworkCore;
 
 namespace BiblioCase.Application.Books;
@@ -9,9 +8,9 @@ public class GetBooksHandler
 {
     private readonly AppDbContext _db;
 
-    public GetBooksHandler(AppDbContext _db)
+    public GetBooksHandler(AppDbContext db)
     {
-        this._db = _db;
+        _db = db;
     }
 
     public async Task<List<BookDto>> Handle()
