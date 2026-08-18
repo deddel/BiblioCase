@@ -2,6 +2,11 @@ using BiblioCase.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpClient("BiblioCase.Api", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5176/");
+});
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
