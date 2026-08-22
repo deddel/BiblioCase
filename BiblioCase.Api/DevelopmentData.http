@@ -1,0 +1,101 @@
+###
+
+POST http://localhost:5176/books
+Content-Type: application/json
+
+{
+  "title": "Dune",
+  "authorName": "Frank Herbert"
+
+}
+
+### 
+
+POST http://localhost:5176/books
+Content-Type: application/json
+
+{
+  "title": "A Perfect Spy",
+  "authorName": "John le Carré"
+
+}
+
+###
+
+POST http://localhost:5176/books
+Content-Type: application/json
+
+{
+  "title": "The Hobbit",
+  "authorName": "J.R.R. Tolkien"
+}
+
+###
+
+POST http://localhost:5176/books
+Content-Type: application/json
+
+{
+  "title": "Foundation",
+  "authorName": "Isaac Asimov"
+}
+
+###
+
+POST http://localhost:5176/books
+Content-Type: application/json
+
+{
+  "title": "The Catcher in the Rye",
+  "authorName": "J.D. Salinger"
+}
+
+###
+
+POST http://localhost:5176/books
+Content-Type: application/json
+
+{
+  "title": "To Kill a Mockingbird",
+  "authorName": "Harper Lee"
+}
+
+###
+
+POST http://localhost:5176/books
+Content-Type: application/json
+
+{
+  "title": "1984",
+  "authorName": "George Orwell"
+}
+
+###
+
+POST http://localhost:5176/books
+Content-Type: application/json  
+
+{
+  "title": "Brave New World",
+  "authorName": "Aldous Huxley"
+}
+
+###
+
+POST http://localhost:5176/books
+Content-Type: application/json
+
+{
+  "title": "The Great Gatsby",
+  "authorName": "F. Scott Fitzgerald"
+}
+
+###
+
+POST http://localhost:5176/books
+Content-Type: application/json  
+
+{
+  "title": "Moby Dick",
+  "authorName": "Herman Melville"
+}

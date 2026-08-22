@@ -1,21 +1,21 @@
-@BiblioCase.Api_HostAddress = http://localhost:5176
+@host = http://localhost:5176
 
-GET {{BiblioCase.Api_HostAddress}}/weatherforecast/
+GET {{host}}/weatherforecast/
 Accept: application/json
 
 ###
 
-GET {{BiblioCase.Api_HostAddress}}/books
+GET {{host}}/books
 Accept: application/json
 
 ###
 
-GET {{BiblioCase.Api_HostAddress}}/books/1
+GET {{host}}/books/1
 Accept: application/json
 
 ###
 
-POST {{BiblioCase.Api_HostAddress}}/books
+POST {{host}}/books
 Content-Type: application/json
 
 {
@@ -25,21 +25,21 @@ Content-Type: application/json
 
 ###
 
-PUT {{BiblioCase.Api_HostAddress}}/books/1
+PUT {{host}}/books/1
 Content-Type: application/json
 
 {
-  "title": "Updated book",
-  "authorName": "Updated author"
+  "title": "A Perfect Spy",
+  "authorName": "John le Carré"
 }
 
 ###
 
-DELETE {{BiblioCase.Api_HostAddress}}/books/1
+DELETE {{host}}/books/1
 
 ###
 
-GET {{BiblioCase.Api_HostAddress}}/authors
+GET {{host}}/authors
 Accept: application/json
 
 ###
