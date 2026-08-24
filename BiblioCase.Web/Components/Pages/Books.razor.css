@@ -1,0 +1,4 @@
+.btn-primary {
+    background-color: var(--bc-accent);
+    border-color: var(--bc-accent);
+}
