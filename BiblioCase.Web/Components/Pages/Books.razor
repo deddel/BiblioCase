@@ -2,8 +2,9 @@
 
 @page "/books"
 @attribute [StreamRendering]
+@rendermode InteractiveServer
 
-<PageTitle>Böcker</PageTitle>
+<PageTitle>Hundra böcker du borde läsa</PageTitle>
 
 <h1>Böcker</h1>
 
@@ -59,7 +60,26 @@ else
             </div>
 
             <div class="modal-body">
-                ...
+                @if (!string.IsNullOrWhiteSpace(errorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">@errorMessage</div>
+                }
+
+                <div class="mb-3">
+                    <label for="bookTitle" class="form-label">Titel</label>
+                    <input id="bookTitle"
+                           class="form-control"
+                           @bind="newBook.Title"
+                           disabled="@isSaving" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="bookAuthor" class="form-label">Författare</label>
+                    <input id="bookAuthor"
+                           class="form-control"
+                           @bind="newBook.AuthorName"
+                           disabled="@isSaving" />
+                </div>
             </div>
 
             <div class="modal-footer">
@@ -70,8 +90,10 @@ else
                 </button>
 
                 <button type="button"
-                        class="btn btn-primary">
-                    Spara bok
+                        class="btn btn-primary"
+                        @onclick="CreateBookAsync"
+                        disabled="@isSaving">
+                    @(isSaving ? "Sparar..." : "Spara bok")
                 </button>
             </div>
 
@@ -81,11 +103,57 @@ else
 
 @code {
     private List<BookDto>? books;
+    private CreateBookRequest newBook = new();
+    private string? errorMessage;
+    private bool isSaving;
 
     protected override async Task OnInitializedAsync()
     {
         HttpClient client = HttpClientFactory.CreateClient("BiblioCase.Api");
 
         books = await client.GetFromJsonAsync<List<BookDto>>("books");
+    }
+
+    private async Task CreateBookAsync()
+    {
+        errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(newBook.Title) || string.IsNullOrWhiteSpace(newBook.AuthorName))
+        {
+            errorMessage = "Fyll i både titel och författare.";
+            return;
+        }
+
+        isSaving = true;
+
+        try
+        {
+            HttpClient client = HttpClientFactory.CreateClient("BiblioCase.Api");
+            HttpResponseMessage response = await client.PostAsJsonAsync("books", newBook);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = "Boken kunde inte sparas.";
+                return;
+            }
+
+            BookDto? createdBook = await response.Content.ReadFromJsonAsync<BookDto>();
+
+            if (createdBook is not null)
+            {
+                books ??= [];
+                books.Add(createdBook);
+            }
+
+            newBook = new();
+        }
+        catch (HttpRequestException)
+        {
+            errorMessage = "Kunde inte kontakta API:et.";
+        }
+        finally
+        {
+            isSaving = false;
+        }
     }
 }
