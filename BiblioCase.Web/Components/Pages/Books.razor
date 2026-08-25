@@ -8,7 +8,7 @@
 
 <h1>Hundra böcker du borde läsa</h1>
 
-@if (books == null)
+@if (_books == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -31,14 +31,24 @@ else
                     <tr>
                         <th>Titel</th>
                         <th>Författare</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var book in books)
+                    @foreach (var book in _books)
                     {
                         <tr>
                             <td>@book.Title</td>
                             <td>@book.Author</td>
+                            <td class="text-end">
+                                <button type="button"
+                                        class="btn btn-outline-primary btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editBookModal"
+                                        @onclick="() => SelectBook(book)">
+                                    Visa/redigera
+                                </button>
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -60,25 +70,25 @@ else
             </div>
 
             <div class="modal-body">
-                @if (!string.IsNullOrWhiteSpace(errorMessage))
+                @if (!string.IsNullOrWhiteSpace(_errorMessage))
                 {
-                    <div class="alert alert-danger" role="alert">@errorMessage</div>
+                    <div class="alert alert-danger" role="alert">@_errorMessage</div>
                 }
 
                 <div class="mb-3">
                     <label for="bookTitle" class="form-label">Titel</label>
                     <input id="bookTitle"
                            class="form-control"
-                           @bind="newBook.Title"
-                           disabled="@isSaving" />
+                           @bind="_newBook.Title"
+                           disabled="@_isSaving" />
                 </div>
 
                 <div class="mb-3">
                     <label for="bookAuthor" class="form-label">Författare</label>
                     <input id="bookAuthor"
                            class="form-control"
-                           @bind="newBook.AuthorName"
-                           disabled="@isSaving" />
+                           @bind="_newBook.AuthorName"
+                           disabled="@_isSaving" />
                 </div>
             </div>
 
@@ -92,8 +102,8 @@ else
                 <button type="button"
                         class="btn btn-primary"
                         @onclick="CreateBookAsync"
-                        disabled="@isSaving">
-                    @(isSaving ? "Sparar..." : "Spara bok")
+                        disabled="@_isSaving">
+                    @(_isSaving ? "Sparar..." : "Spara bok")
                 </button>
             </div>
 
@@ -101,39 +111,124 @@ else
     </div>
 </div>
 
+<div class="modal fade" id="editBookModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Visa/redigera bok</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+                @if (!string.IsNullOrWhiteSpace(_editErrorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">@_editErrorMessage</div>
+                }
+
+                @if (_bookWasDeleted)
+                {
+                    <div class="alert alert-success mb-0" role="alert">Boken har tagits bort.</div>
+                }
+                else
+                {
+                    <div class="mb-3">
+                        <label for="editBookTitle" class="form-label">Titel</label>
+                        <input id="editBookTitle"
+                               class="form-control"
+                               @bind="_editedBook.Title"
+                               disabled="@_isUpdating" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editBookAuthor" class="form-label">Författare</label>
+                        <input id="editBookAuthor"
+                               class="form-control"
+                               @bind="_editedBook.AuthorName"
+                               disabled="@_isUpdating" />
+                    </div>
+                }
+            </div>
+
+            <div class="modal-footer">
+                @if (_bookWasDeleted)
+                {
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Stäng
+                    </button>
+                }
+                else
+                {
+                    <button type="button"
+                            class="btn btn-outline-danger me-auto"
+                            @onclick="DeleteBookAsync"
+                            disabled="@(_isUpdating || _isDeleting)">
+                        @(_confirmingDelete ? "Bekräfta borttagning" : "Ta bort bok")
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal"
+                            disabled="@(_isUpdating || _isDeleting)">
+                        Avbryt
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-primary"
+                            @onclick="UpdateBookAsync"
+                            disabled="@(_isUpdating || _isDeleting)">
+                        @(_isUpdating ? "Sparar..." : "Spara ändringar")
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
 @code {
-    private List<BookDto>? books;
-    private CreateBookRequest newBook = new();
-    private string? errorMessage;
-    private bool isSaving;
+    private List<BookDto>? _books;
+    private CreateBookRequest _newBook = new();
+    private UpdateBookRequest _editedBook = new();
+    private string? _errorMessage;
+    private string? _editErrorMessage;
+    private int? _selectedBookId;
+    private bool _isSaving;
+    private bool _isUpdating;
+    private bool _isDeleting;
+    private bool _confirmingDelete;
+    private bool _bookWasDeleted;
 
     protected override async Task OnInitializedAsync()
     {
         HttpClient client = HttpClientFactory.CreateClient("BiblioCase.Api");
 
-        books = await client.GetFromJsonAsync<List<BookDto>>("books");
+        _books = await client.GetFromJsonAsync<List<BookDto>>("books");
     }
 
     private async Task CreateBookAsync()
     {
-        errorMessage = null;
+        _errorMessage = null;
 
-        if (string.IsNullOrWhiteSpace(newBook.Title) || string.IsNullOrWhiteSpace(newBook.AuthorName))
+        if (string.IsNullOrWhiteSpace(_newBook.Title) || string.IsNullOrWhiteSpace(_newBook.AuthorName))
         {
-            errorMessage = "Fyll i både titel och författare.";
+            _errorMessage = "Fyll i både titel och författare.";
             return;
         }
 
-        isSaving = true;
+        _isSaving = true;
 
         try
         {
             HttpClient client = HttpClientFactory.CreateClient("BiblioCase.Api");
-            HttpResponseMessage response = await client.PostAsJsonAsync("books", newBook);
+            HttpResponseMessage response = await client.PostAsJsonAsync("books", _newBook);
 
             if (!response.IsSuccessStatusCode)
             {
-                errorMessage = "Boken kunde inte sparas.";
+                _errorMessage = "Boken kunde inte sparas.";
                 return;
             }
 
@@ -141,19 +236,118 @@ else
 
             if (createdBook is not null)
             {
-                books ??= [];
-                books.Add(createdBook);
+                _books ??= [];
+                _books.Add(createdBook);
             }
 
-            newBook = new();
+            _newBook = new();
         }
         catch (HttpRequestException)
         {
-            errorMessage = "Kunde inte kontakta API:et.";
+            _errorMessage = "Kunde inte kontakta API:et.";
         }
         finally
         {
-            isSaving = false;
+            _isSaving = false;
+        }
+    }
+
+    private void SelectBook(BookDto book)
+    {
+        _selectedBookId = book.Id;
+        _editedBook = new UpdateBookRequest
+        {
+            Title = book.Title,
+            AuthorName = book.Author
+        };
+        _editErrorMessage = null;
+        _confirmingDelete = false;
+        _bookWasDeleted = false;
+    }
+
+    private async Task UpdateBookAsync()
+    {
+        if (_selectedBookId is null)
+        {
+            return;
+        }
+
+        _editErrorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(_editedBook.Title) || string.IsNullOrWhiteSpace(_editedBook.AuthorName))
+        {
+            _editErrorMessage = "Fyll i både titel och författare.";
+            return;
+        }
+
+        _isUpdating = true;
+
+        try
+        {
+            HttpClient client = HttpClientFactory.CreateClient("BiblioCase.Api");
+            HttpResponseMessage response = await client.PutAsJsonAsync($"books/{_selectedBookId}", _editedBook);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _editErrorMessage = "Boken kunde inte uppdateras.";
+                return;
+            }
+
+            BookDto? updatedBook = await response.Content.ReadFromJsonAsync<BookDto>();
+            int index = _books?.FindIndex(book => book.Id == _selectedBookId) ?? -1;
+
+            if (updatedBook is not null && index >= 0)
+            {
+                _books![index] = updatedBook;
+            }
+        }
+        catch (HttpRequestException)
+        {
+            _editErrorMessage = "Kunde inte kontakta API:et.";
+        }
+        finally
+        {
+            _isUpdating = false;
+        }
+    }
+
+    private async Task DeleteBookAsync()
+    {
+        if (!_confirmingDelete)
+        {
+            _confirmingDelete = true;
+            return;
+        }
+
+        if (_selectedBookId is null)
+        {
+            return;
+        }
+
+        _editErrorMessage = null;
+        _isDeleting = true;
+
+        try
+        {
+            HttpClient client = HttpClientFactory.CreateClient("BiblioCase.Api");
+            HttpResponseMessage response = await client.DeleteAsync($"books/{_selectedBookId}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _editErrorMessage = "Boken kunde inte tas bort.";
+                return;
+            }
+
+            _books?.RemoveAll(book => book.Id == _selectedBookId);
+            _bookWasDeleted = true;
+        }
+        catch (HttpRequestException)
+        {
+            _editErrorMessage = "Kunde inte kontakta API:et.";
+        }
+        finally
+        {
+            _isDeleting = false;
         }
     }
 }
