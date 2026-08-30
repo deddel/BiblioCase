@@ -1,14 +1,14 @@
 using BiblioCase.Application.DTOs;
-using BiblioCase.Infrastructure;
+using BiblioCase.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace BiblioCase.Application.Authors;
 
 public class GetAuthorsHandler
 {
-    private readonly AppDbContext _db;
+    private readonly IAppDbContext _db;
 
-    public GetAuthorsHandler(AppDbContext db)
+    public GetAuthorsHandler(IAppDbContext db)
     {
         _db = db;
     }

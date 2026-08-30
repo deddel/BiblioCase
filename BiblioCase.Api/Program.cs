@@ -1,9 +1,10 @@
+using BiblioCase.Application.Authors;
+using BiblioCase.Application.Books;
+using BiblioCase.Application.DTOs;
+using BiblioCase.Application.Interfaces;
+using BiblioCase.Application.Weather;
 using BiblioCase.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using BiblioCase.Application.Books;
-using BiblioCase.Application.Weather;
-using BiblioCase.Application.DTOs;
-using BiblioCase.Application.Authors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +18,7 @@ builder.Services.AddScoped<UpdateBookHandler>();
 builder.Services.AddScoped<DeleteBookHandler>();
 builder.Services.AddScoped<GetAuthorsHandler>();
 builder.Services.AddScoped<GetWeatherForecastHandler>();
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<IAppDbContext, AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
@@ -57,6 +58,12 @@ app.MapGet("/books/{id:int}", async (int id, GetBookByIdHandler handler) =>
 
 app.MapPost("/books", async (CreateBookRequest request, CreateBookHandler handler) =>
 {
+    if (string.IsNullOrWhiteSpace(request.Title) ||
+        (request.AuthorId is null && string.IsNullOrWhiteSpace(request.NewAuthorName) && string.IsNullOrWhiteSpace(request.AuthorName)))
+    {
+        return Results.BadRequest();
+    }
+
     var book = await handler.Handle(request);
 
     if (book is null)
@@ -69,7 +76,8 @@ app.MapPost("/books", async (CreateBookRequest request, CreateBookHandler handle
 
 app.MapPut("/books/{id:int}", async (int id, UpdateBookRequest request, UpdateBookHandler handler) =>
 {
-    if (string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.AuthorName))
+    if (string.IsNullOrWhiteSpace(request.Title) ||
+        (request.AuthorId is null && string.IsNullOrWhiteSpace(request.NewAuthorName) && string.IsNullOrWhiteSpace(request.AuthorName)))
     {
         return Results.BadRequest();
     }

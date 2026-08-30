@@ -1,3 +1,4 @@
+using BiblioCase.Infrastructure.External;
 using BiblioCase.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,6 +6,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient("BiblioCase.Api", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5176/");
+});
+
+builder.Services.AddHttpClient<OpenLibraryClient>(client =>
+{
+    client.BaseAddress = new Uri("https://openlibrary.org/");
 });
 
 // Add services to the container.

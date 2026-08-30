@@ -1,12 +1,12 @@
-using BiblioCase.Infrastructure;
+using BiblioCase.Application.Interfaces;
 
 namespace BiblioCase.Application.Books;
 
 public class DeleteBookHandler
 {
-    private readonly AppDbContext _db;
+    private readonly IAppDbContext _db;
 
-    public DeleteBookHandler(AppDbContext db)
+    public DeleteBookHandler(IAppDbContext db)
     {
         _db = db;
     }

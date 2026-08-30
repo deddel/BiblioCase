@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BiblioCase.Application\BiblioCase.Application.csproj" />
+    <ProjectReference Include="..\BiblioCase.Infrastructure\BiblioCase.Infrastructure.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

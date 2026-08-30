@@ -1,0 +1,123 @@
+@inject IHttpClientFactory HttpClientFactory
+@inject OpenLibraryClient OpenLibraryClient
+
+@using BiblioCase.Infrastructure.External
+
+@page "/authors"
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+<PageTitle>Författare</PageTitle>
+
+<h1>Författare du borde läsa</h1>
+
+@if (_authors == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <span>Alla författare</span>
+                </div>
+
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Författare</th>
+                                <th class="text-end">Info</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var author in _authors)
+                            {
+                                <tr>
+                                    <td>@author.Name</td>
+                                    <td class="text-end">
+                                        <button type="button"
+                                                class="btn btn-outline-primary btn-sm"
+                                                @onclick="() => LoadAuthorDetailsAsync(author)">
+                                            Visa info
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            @if (_selectedAuthor is not null)
+            {
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h3 class="h5 mb-3">@_selectedAuthor.Name</h3>
+
+                        @if (!string.IsNullOrWhiteSpace(_selectedAuthor.BirthDate))
+                        {
+                            <p class="mb-2"><strong>Födelsedatum:</strong> @_selectedAuthor.BirthDate</p>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(_selectedAuthor.TopWork))
+                        {
+                            <p class="mb-0"><strong>Känd för:</strong> @_selectedAuthor.TopWork</p>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card shadow-sm">
+                    <div class="card-body text-muted">
+                        Välj en författare för att se information här.
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(_errorMessage))
+{
+    <div class="alert alert-warning mt-3" role="alert">@_errorMessage</div>
+}
+
+@code {
+    private List<AuthorDto>? _authors;
+    private OpenLibraryAuthorDoc? _selectedAuthor;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = HttpClientFactory.CreateClient("BiblioCase.Api");
+        _authors = await client.GetFromJsonAsync<List<AuthorDto>>("authors");
+    }
+
+    private async Task LoadAuthorDetailsAsync(AuthorDto author)
+    {
+        _errorMessage = null;
+
+        try
+        {
+            var result = await OpenLibraryClient.SearchAuthorsAsync(author.Name);
+            _selectedAuthor = result?.Docs
+                .FirstOrDefault(doc => string.Equals(doc.Name?.Trim(), author.Name.Trim(), StringComparison.OrdinalIgnoreCase))
+                ?? result?.Docs.FirstOrDefault();
+
+            if (_selectedAuthor is null)
+            {
+                _errorMessage = "Ingen information hittades för den här författaren i Open Library.";
+            }
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "Kunde inte hämta information från Open Library.";
+        }
+    }
+}

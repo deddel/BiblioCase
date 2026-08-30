@@ -1,14 +1,14 @@
 using BiblioCase.Application.DTOs;
-using BiblioCase.Infrastructure;
+using BiblioCase.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace BiblioCase.Application.Books;
 
 public class GetBookByIdHandler
 {
-    private readonly AppDbContext _db;
+    private readonly IAppDbContext _db;
 
-    public GetBookByIdHandler(AppDbContext db)
+    public GetBookByIdHandler(IAppDbContext db)
     {
         _db = db;
     }

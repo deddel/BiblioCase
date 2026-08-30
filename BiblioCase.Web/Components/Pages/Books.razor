@@ -84,10 +84,25 @@ else
                 </div>
 
                 <div class="mb-3">
-                    <label for="bookAuthor" class="form-label">Författare</label>
-                    <input id="bookAuthor"
+                    <label for="selectedAuthorId" class="form-label">Välj befintlig författare</label>
+                    <select id="selectedAuthorId"
+                            class="form-select"
+                            @bind="_selectedAuthorId"
+                            disabled="@_isSaving">
+                        <option value="0">-- Välj författare --</option>
+                        @foreach (var author in _authors)
+                        {
+                            <option value="@author.Id">@author.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="newAuthorName" class="form-label">Eller skriv in ny författare</label>
+                    <input id="newAuthorName"
                            class="form-control"
-                           @bind="_newBook.AuthorName"
+                           @bind="_newAuthorName"
+                           placeholder="Ny författare"
                            disabled="@_isSaving" />
                 </div>
             </div>
@@ -143,10 +158,25 @@ else
                     </div>
 
                     <div class="mb-3">
-                        <label for="editBookAuthor" class="form-label">Författare</label>
-                        <input id="editBookAuthor"
+                        <label for="editBookAuthor" class="form-label">Välj befintlig författare</label>
+                        <select id="editBookAuthor"
+                                class="form-select"
+                                @bind="_selectedEditAuthorId"
+                                disabled="@_isUpdating">
+                            <option value="0">-- Välj författare --</option>
+                            @foreach (var author in _authors)
+                            {
+                                <option value="@author.Id">@author.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editNewAuthorName" class="form-label">Eller skriv in ny författare</label>
+                        <input id="editNewAuthorName"
                                class="form-control"
-                               @bind="_editedBook.AuthorName"
+                               @bind="_editNewAuthorName"
+                               placeholder="Ny författare"
                                disabled="@_isUpdating" />
                     </div>
                 }
@@ -191,11 +221,16 @@ else
 
 @code {
     private List<BookDto>? _books;
+    private List<AuthorDto> _authors = [];
     private CreateBookRequest _newBook = new();
     private UpdateBookRequest _editedBook = new();
     private string? _errorMessage;
     private string? _editErrorMessage;
     private int? _selectedBookId;
+    private int _selectedAuthorId;
+    private string _newAuthorName = "";
+    private int _selectedEditAuthorId;
+    private string _editNewAuthorName = "";
     private bool _isSaving;
     private bool _isUpdating;
     private bool _isDeleting;
@@ -207,17 +242,27 @@ else
         HttpClient client = HttpClientFactory.CreateClient("BiblioCase.Api");
 
         _books = await client.GetFromJsonAsync<List<BookDto>>("books");
+        _authors = await client.GetFromJsonAsync<List<AuthorDto>>("authors") ?? [];
     }
 
     private async Task CreateBookAsync()
     {
         _errorMessage = null;
 
-        if (string.IsNullOrWhiteSpace(_newBook.Title) || string.IsNullOrWhiteSpace(_newBook.AuthorName))
+        if (string.IsNullOrWhiteSpace(_newBook.Title))
         {
-            _errorMessage = "Fyll i både titel och författare.";
+            _errorMessage = "Fyll i titel.";
             return;
         }
+
+        if (_selectedAuthorId == 0 && string.IsNullOrWhiteSpace(_newAuthorName))
+        {
+            _errorMessage = "Välj en befintlig författare eller skriv in en ny.";
+            return;
+        }
+
+        _newBook.AuthorId = _selectedAuthorId == 0 ? null : _selectedAuthorId;
+        _newBook.NewAuthorName = string.IsNullOrWhiteSpace(_newAuthorName) ? null : _newAuthorName;
 
         _isSaving = true;
 
@@ -241,6 +286,8 @@ else
             }
 
             _newBook = new();
+            _selectedAuthorId = 0;
+            _newAuthorName = "";
         }
         catch (HttpRequestException)
         {
@@ -255,9 +302,12 @@ else
     private void SelectBook(BookDto book)
     {
         _selectedBookId = book.Id;
+        _selectedEditAuthorId = _authors.FirstOrDefault(author => author.Name == book.Author)?.Id ?? 0;
+        _editNewAuthorName = "";
         _editedBook = new UpdateBookRequest
         {
             Title = book.Title,
+            AuthorId = _selectedEditAuthorId == 0 ? null : _selectedEditAuthorId,
             AuthorName = book.Author
         };
         _editErrorMessage = null;
@@ -274,11 +324,20 @@ else
 
         _editErrorMessage = null;
 
-        if (string.IsNullOrWhiteSpace(_editedBook.Title) || string.IsNullOrWhiteSpace(_editedBook.AuthorName))
+        if (string.IsNullOrWhiteSpace(_editedBook.Title))
         {
-            _editErrorMessage = "Fyll i både titel och författare.";
+            _editErrorMessage = "Fyll i titel.";
             return;
         }
+
+        if (_selectedEditAuthorId == 0 && string.IsNullOrWhiteSpace(_editNewAuthorName))
+        {
+            _editErrorMessage = "Välj en befintlig författare eller skriv in en ny.";
+            return;
+        }
+
+        _editedBook.AuthorId = _selectedEditAuthorId == 0 ? null : _selectedEditAuthorId;
+        _editedBook.NewAuthorName = string.IsNullOrWhiteSpace(_editNewAuthorName) ? null : _editNewAuthorName;
 
         _isUpdating = true;
 

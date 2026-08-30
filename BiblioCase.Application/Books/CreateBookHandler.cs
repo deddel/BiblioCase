@@ -1,39 +1,51 @@
+using BiblioCase.Application.Authors;
 using BiblioCase.Application.DTOs;
+using BiblioCase.Application.Interfaces;
 using BiblioCase.Domain;
-using BiblioCase.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace BiblioCase.Application.Books;
 
 public class CreateBookHandler
 {
-    private readonly AppDbContext _db;
+    private readonly IAppDbContext _db;
 
-    public CreateBookHandler(AppDbContext db)
+    public CreateBookHandler(IAppDbContext db)
     {
         _db = db;
     }
 
     public async Task<BookDto?> Handle(CreateBookRequest request)
     {
-        var title = request.Title?.Trim() ?? "";
-        var authorName = request.AuthorName?.Trim() ?? "";
+        var title = AuthorNameHelper.Normalize(request.Title);
 
-        if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(authorName))
+        if (string.IsNullOrWhiteSpace(title))
         {
             return null;
         }
 
-        var normalizedAuthorName = authorName.ToLower();
-        var author = await _db.Authors
-            .FirstOrDefaultAsync(a => a.Name.ToLower() == normalizedAuthorName);
+        Author author;
 
-        if (author is null)
+        if (!string.IsNullOrWhiteSpace(request.NewAuthorName))
         {
-            author = new Author
+            author = await AuthorNameHelper.GetOrCreateAuthorAsync(_db, request.NewAuthorName);
+        }
+        else if (request.AuthorId is > 0)
+        {
+            author = await _db.Authors
+                .FirstOrDefaultAsync(a => a.Id == request.AuthorId)
+                ?? throw new InvalidOperationException("Author not found.");
+        }
+        else
+        {
+            var authorName = AuthorNameHelper.Normalize(request.AuthorName);
+
+            if (string.IsNullOrWhiteSpace(authorName))
             {
-                Name = authorName
-            };
+                return null;
+            }
+
+            author = await AuthorNameHelper.GetOrCreateAuthorAsync(_db, authorName);
         }
 
         var book = new Book
