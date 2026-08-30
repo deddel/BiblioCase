@@ -17,6 +17,7 @@ builder.Services.AddScoped<CreateBookHandler>();
 builder.Services.AddScoped<UpdateBookHandler>();
 builder.Services.AddScoped<DeleteBookHandler>();
 builder.Services.AddScoped<GetAuthorsHandler>();
+builder.Services.AddScoped<DeleteUnusedAuthorsHandler>();
 builder.Services.AddScoped<GetWeatherForecastHandler>();
 builder.Services.AddDbContext<IAppDbContext, AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -110,5 +111,10 @@ app.MapGet("/authors", async (GetAuthorsHandler handler) =>
     return Results.Ok(authors);
 });
 
+app.MapDelete("/authors/unused", async (DeleteUnusedAuthorsHandler handler) =>
+{
+    var removedCount = await handler.Handle();
+    return Results.Ok(new { removedCount });
+});
 
 app.Run();

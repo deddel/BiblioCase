@@ -17,6 +17,14 @@
 }
 else
 {
+    <div class="d-flex justify-content-end mb-3">
+        <button type="button"
+                class="btn btn-outline-secondary btn-sm"
+                @onclick="CleanupUnusedAuthorsAsync">
+            @(string.IsNullOrWhiteSpace(_cleanupMessage) ? "Ta bort oanvända författare" : _cleanupMessage)
+        </button>
+    </div>
+
     <div class="row g-4">
         <div class="col-lg-6">
             <div class="card shadow-sm">
@@ -92,11 +100,44 @@ else
     private List<AuthorDto>? _authors;
     private OpenLibraryAuthorDoc? _selectedAuthor;
     private string? _errorMessage;
+    private string _cleanupMessage = "";
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadAuthorsAsync();
+    }
+
+    private async Task LoadAuthorsAsync()
+    {
         var client = HttpClientFactory.CreateClient("BiblioCase.Api");
         _authors = await client.GetFromJsonAsync<List<AuthorDto>>("authors");
+    }
+
+    private async Task CleanupUnusedAuthorsAsync()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("BiblioCase.Api");
+            var response = await client.DeleteAsync("authors/unused");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _errorMessage = "Kunde inte ta bort oanvända författare.";
+                return;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<CleanupResult>();
+            _cleanupMessage = result is not null && result.RemovedCount > 0
+                ? $"{result.RemovedCount} oanvända författare borttagna"
+                : "Inga oanvända författare hittades";
+
+            await LoadAuthorsAsync();
+            _selectedAuthor = null;
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "Kunde inte kontakta API:et.";
+        }
     }
 
     private async Task LoadAuthorDetailsAsync(AuthorDto author)
@@ -119,5 +160,10 @@ else
         {
             _errorMessage = "Kunde inte hämta information från Open Library.";
         }
+    }
+
+    private sealed class CleanupResult
+    {
+        public int RemovedCount { get; set; }
     }
 }
