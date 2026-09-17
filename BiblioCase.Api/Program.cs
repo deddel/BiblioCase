@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+Console.WriteLine($"ContentRootPath: {builder.Environment.ContentRootPath}");
+var dbPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "data", "BiblioCase.db"));
+Console.WriteLine($"Database path: {dbPath}");
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddOpenApi();
@@ -20,7 +23,7 @@ builder.Services.AddScoped<GetAuthorsHandler>();
 builder.Services.AddScoped<DeleteUnusedAuthorsHandler>();
 builder.Services.AddScoped<GetWeatherForecastHandler>();
 builder.Services.AddDbContext<IAppDbContext, AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlite($"Data Source={dbPath}"));
 
 var app = builder.Build();
 
