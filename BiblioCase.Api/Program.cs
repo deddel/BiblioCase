@@ -8,11 +8,10 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Console.WriteLine($"ContentRootPath: {builder.Environment.ContentRootPath}");
+// Path to SQLite database
 var dbPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "data", "BiblioCase.db"));
-Console.WriteLine($"Database path: {dbPath}");
+
 // Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<GetBooksHandler>();
 builder.Services.AddScoped<GetBookByIdHandler>();
