@@ -5,19 +5,34 @@ Content-Type: application/json
 
 {
   "title": "Dune",
-  "authorName": "Frank Herbert"
-
+  "newAuthorFirstName": "Frank",
+  "newAuthorLastName": "Herbert",
+  "synopsis": "A science fiction novel about politics, religion and power on the desert planet Arrakis.",
+  "firstPublicationYear": 1965
 }
 
 ### 
+POST http://localhost:5176/books
+Content-Type: application/json
+
+{
+  "title": "Children of Dune",
+  "authorId": 1,
+  "synopsis": "The second sequel to Dune.",
+  "firstPublicationYear": 1976
+}
+###
+###
 
 POST http://localhost:5176/books
 Content-Type: application/json
 
 {
   "title": "A Perfect Spy",
-  "authorName": "John le Carré"
-
+  "newAuthorFirstName": "John",
+  "newAuthorLastName": "le Carré",
+  "synopsis": "A chronicle of the double life of intelligence officer Magnus Pym.",
+  "firstPublicationYear": 1986
 }
 
 ###
@@ -27,7 +42,10 @@ Content-Type: application/json
 
 {
   "title": "The Hobbit",
-  "authorName": "J.R.R. Tolkien"
+  "newAuthorFirstName": "J.R.R.",
+  "newAuthorLastName": "Tolkien",
+  "synopsis": "Bilbo Baggins journeys with dwarves to reclaim their mountain home from Smaug.",
+  "firstPublicationYear": 1937
 }
 
 ###
@@ -37,7 +55,10 @@ Content-Type: application/json
 
 {
   "title": "Foundation",
-  "authorName": "Isaac Asimov"
+  "newAuthorFirstName": "Isaac",
+  "newAuthorLastName": "Asimov",
+  "synopsis": "A mathematician develops psychohistory to save galactic civilization from collapse.",
+  "firstPublicationYear": 1951
 }
 
 ###
@@ -47,7 +68,10 @@ Content-Type: application/json
 
 {
   "title": "The Catcher in the Rye",
-  "authorName": "J.D. Salinger"
+  "newAuthorFirstName": "J.D.",
+  "newAuthorLastName": "Salinger",
+  "synopsis": "Holden Caulfield wanders New York City while struggling with loss and alienating feelings.",
+  "firstPublicationYear": 1951
 }
 
 ###
@@ -57,7 +81,10 @@ Content-Type: application/json
 
 {
   "title": "To Kill a Mockingbird",
-  "authorName": "Harper Lee"
+  "newAuthorFirstName": "Harper",
+  "newAuthorLastName": "Lee",
+  "synopsis": "Lawyer Atticus Finch defends a Black man unjustly accused of a crime in Alabama.",
+  "firstPublicationYear": 1960
 }
 
 ###
@@ -67,17 +94,23 @@ Content-Type: application/json
 
 {
   "title": "1984",
-  "authorName": "George Orwell"
+  "newAuthorFirstName": "George",
+  "newAuthorLastName": "Orwell",
+  "synopsis": "A dystopian tale of totalitarian surveillance and thought control under Big Brother.",
+  "firstPublicationYear": 1949
 }
 
 ###
 
 POST http://localhost:5176/books
-Content-Type: application/json  
+Content-Type: application/json
 
 {
   "title": "Brave New World",
-  "authorName": "Aldous Huxley"
+  "newAuthorFirstName": "Aldous",
+  "newAuthorLastName": "Huxley",
+  "synopsis": "A futuristic society relies on genetic engineering, conditioning, and soma to maintain social order.",
+  "firstPublicationYear": 1932
 }
 
 ###
@@ -87,15 +120,21 @@ Content-Type: application/json
 
 {
   "title": "The Great Gatsby",
-  "authorName": "F. Scott Fitzgerald"
+  "newAuthorFirstName": "F. Scott",
+  "newAuthorLastName": "Fitzgerald",
+  "synopsis": "A mysterious millionaire pursues his obsession with Daisy Buchanan during the Roaring Twenties.",
+  "firstPublicationYear": 1925
 }
 
 ###
 
 POST http://localhost:5176/books
-Content-Type: application/json  
+Content-Type: application/json
 
 {
   "title": "Moby Dick",
-  "authorName": "Herman Melville"
+  "newAuthorFirstName": "Herman",
+  "newAuthorLastName": "Melville",
+  "synopsis": "Captain Ahab obsessively hunts the giant white whale that maimed him.",
+  "firstPublicationYear": 1851
 }
