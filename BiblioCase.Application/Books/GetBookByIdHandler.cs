@@ -22,7 +22,14 @@ public class GetBookByIdHandler
             {
                 Id = b.Id,
                 Title = b.Title,
-                Author = b.Author!.Name
+                Synopsis = b.Synopsis,
+                FirstPublicationYear = b.FirstPublicationYear,
+                Author = new AuthorDto
+                {
+                    Id = b.Author!.Id,
+                    FirstName = b.Author.FirstName,
+                    LastName = b.Author.LastName
+                }
             })
             .FirstOrDefaultAsync();
     }

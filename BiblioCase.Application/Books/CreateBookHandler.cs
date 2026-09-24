@@ -15,9 +15,9 @@ public class CreateBookHandler
         _db = db;
     }
 
-    public async Task<BookDto?> Handle(CreateBookRequest request)
+ public async Task<BookDto?> Handle(CreateBookRequest request)
     {
-        var title = AuthorNameHelper.Normalize(request.Title);
+        var title = request.Title.Trim();
 
         if (string.IsNullOrWhiteSpace(title))
         {
@@ -26,11 +26,7 @@ public class CreateBookHandler
 
         Author author;
 
-        if (!string.IsNullOrWhiteSpace(request.NewAuthorName))
-        {
-            author = await AuthorNameHelper.GetOrCreateAuthorAsync(_db, request.NewAuthorName);
-        }
-        else if (request.AuthorId is > 0)
+        if (request.AuthorId is > 0)
         {
             author = await _db.Authors
                 .FirstOrDefaultAsync(a => a.Id == request.AuthorId)
@@ -38,19 +34,36 @@ public class CreateBookHandler
         }
         else
         {
-            var authorName = AuthorNameHelper.Normalize(request.AuthorName);
+            var firstName = request.NewAuthorFirstName?.Trim();
+            var lastName = request.NewAuthorLastName?.Trim();
 
-            if (string.IsNullOrWhiteSpace(authorName))
+            if (string.IsNullOrWhiteSpace(firstName) ||
+                string.IsNullOrWhiteSpace(lastName))
             {
                 return null;
             }
 
-            author = await AuthorNameHelper.GetOrCreateAuthorAsync(_db, authorName);
+            author = await _db.Authors
+                .FirstOrDefaultAsync(a =>
+                    a.FirstName == firstName &&
+                    a.LastName == lastName)
+                ?? new Author
+                {
+                    FirstName = firstName,
+                    LastName = lastName
+                };
+
+            if (author.Id == 0)
+            {
+                _db.Authors.Add(author);
+            }
         }
 
         var book = new Book
         {
             Title = title,
+            Synopsis = request.Synopsis,
+            FirstPublicationYear = request.FirstPublicationYear,
             Author = author
         };
 
@@ -61,7 +74,14 @@ public class CreateBookHandler
         {
             Id = book.Id,
             Title = book.Title,
-            Author = author.Name
+            Synopsis = book.Synopsis,
+            FirstPublicationYear = book.FirstPublicationYear,
+            Author = new AuthorDto
+            {
+                Id = author.Id,
+                FirstName = author.FirstName,
+                LastName = author.LastName
+            }
         };
     }
 }

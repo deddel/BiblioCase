@@ -62,7 +62,9 @@ app.MapGet("/books/{id:int}", async (int id, GetBookByIdHandler handler) =>
 app.MapPost("/books", async (CreateBookRequest request, CreateBookHandler handler) =>
 {
     if (string.IsNullOrWhiteSpace(request.Title) ||
-        (request.AuthorId is null && string.IsNullOrWhiteSpace(request.NewAuthorName) && string.IsNullOrWhiteSpace(request.AuthorName)))
+        (request.AuthorId is null &&
+         (string.IsNullOrWhiteSpace(request.NewAuthorFirstName) ||
+          string.IsNullOrWhiteSpace(request.NewAuthorLastName))))
     {
         return Results.BadRequest();
     }
@@ -80,7 +82,9 @@ app.MapPost("/books", async (CreateBookRequest request, CreateBookHandler handle
 app.MapPut("/books/{id:int}", async (int id, UpdateBookRequest request, UpdateBookHandler handler) =>
 {
     if (string.IsNullOrWhiteSpace(request.Title) ||
-        (request.AuthorId is null && string.IsNullOrWhiteSpace(request.NewAuthorName) && string.IsNullOrWhiteSpace(request.AuthorName)))
+        (request.AuthorId is null &&
+         (string.IsNullOrWhiteSpace(request.NewAuthorFirstName) ||
+          string.IsNullOrWhiteSpace(request.NewAuthorLastName))))
     {
         return Results.BadRequest();
     }

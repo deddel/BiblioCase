@@ -13,5 +13,4 @@ public class AppDbContext : DbContext, IAppDbContext
 
     public DbSet<Book> Books => Set<Book>();
     public DbSet<Author> Authors => Set<Author>();
-    public DbSet<Review> Reviews => Set<Review>();
 }

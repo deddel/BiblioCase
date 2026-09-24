@@ -21,6 +21,21 @@ public static class AuthorNameHelper
         return Normalize(value).Trim();
     }
 
+    public static (string FirstName, string LastName) SplitName(string? value)
+    {
+        var normalizedName = Normalize(value);
+        var separatorIndex = normalizedName.IndexOf(' ');
+
+        return separatorIndex < 0
+            ? (normalizedName, string.Empty)
+            : (normalizedName[..separatorIndex], normalizedName[(separatorIndex + 1)..]);
+    }
+
+    public static string FormatName(Author author)
+    {
+        return Normalize($"{author.FirstName} {author.LastName}");
+    }
+
     public static async Task<Author> GetOrCreateAuthorAsync(IAppDbContext db, string? authorName)
     {
         var normalizedName = Normalize(authorName);
@@ -30,12 +45,12 @@ public static class AuthorNameHelper
             throw new InvalidOperationException("Author name cannot be empty.");
         }
 
-        var comparisonKey = GetComparisonKey(normalizedName);
+        var (firstName, lastName) = SplitName(normalizedName);
 
         var author = await db.Authors
             .FirstOrDefaultAsync(a =>
-                a.Name.Trim() == comparisonKey ||
-                a.Name.Trim().ToLower() == comparisonKey.ToLower());
+            a.FirstName.Trim().ToLower() == firstName.ToLower() &&
+            a.LastName.Trim().ToLower() == lastName.ToLower());
 
         if (author is not null)
         {
@@ -44,7 +59,8 @@ public static class AuthorNameHelper
 
         author = new Author
         {
-            Name = normalizedName
+            FirstName = firstName,
+            LastName = lastName
         };
 
         db.Authors.Add(author);

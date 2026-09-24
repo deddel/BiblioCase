@@ -16,11 +16,13 @@ public class GetAuthorsHandler
     public async Task<List<AuthorDto>> Handle()
     {
         return await _db.Authors
-            .OrderBy(a => a.Name)
+            .OrderBy(a => a.LastName)
+            .ThenBy(a => a.FirstName)
             .Select(a => new AuthorDto
             {
                 Id = a.Id,
-                Name = a.Name
+                FirstName = a.FirstName,
+                LastName = a.LastName
             })
             .ToListAsync();
     }

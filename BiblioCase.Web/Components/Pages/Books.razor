@@ -39,7 +39,7 @@ else
                     {
                         <tr>
                             <td>@book.Title</td>
-                            <td>@book.Author</td>
+                            <td>@GetAuthorName(book.Author)</td>
                             <td class="text-end">
                                 <button type="button"
                                         class="btn btn-outline-primary btn-sm"
@@ -92,17 +92,26 @@ else
                         <option value="0">-- Välj författare --</option>
                         @foreach (var author in _authors)
                         {
-                            <option value="@author.Id">@author.Name</option>
+                            <option value="@author.Id">@GetAuthorName(author)</option>
                         }
                     </select>
                 </div>
 
                 <div class="mb-3">
-                    <label for="newAuthorName" class="form-label">Eller skriv in ny författare</label>
-                    <input id="newAuthorName"
+                    <label for="newAuthorFirstName" class="form-label">Eller skriv in ny författare</label>
+                    <input id="newAuthorFirstName"
                            class="form-control"
-                           @bind="_newAuthorName"
-                           placeholder="Ny författare"
+                           @bind="_newAuthorFirstName"
+                           placeholder="Författarens förnamn"
+                           disabled="@_isSaving" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="newAuthorLastName" class="form-label">Efternamn</label>
+                    <input id="newAuthorLastName"
+                           class="form-control"
+                           @bind="_newAuthorLastName"
+                           placeholder="Författarens efternamn"
                            disabled="@_isSaving" />
                 </div>
             </div>
@@ -147,6 +156,7 @@ else
                 {
                     <div class="alert alert-success mb-0" role="alert">Boken har tagits bort.</div>
                 }
+
                 else
                 {
                     <div class="mb-3">
@@ -166,17 +176,26 @@ else
                             <option value="0">-- Välj författare --</option>
                             @foreach (var author in _authors)
                             {
-                                <option value="@author.Id">@author.Name</option>
+                                <option value="@author.Id">@GetAuthorName(author)</option>
                             }
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label for="editNewAuthorName" class="form-label">Eller skriv in ny författare</label>
-                        <input id="editNewAuthorName"
+                        <label for="editNewAuthorFirstName" class="form-label">Eller skriv in ny författare</label>
+                        <input id="editNewAuthorFirstName"
                                class="form-control"
-                               @bind="_editNewAuthorName"
-                               placeholder="Ny författare"
+                               @bind="_editNewAuthorFirstName"
+                               placeholder="Författarens förnamn"
+                               disabled="@_isUpdating" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editNewAuthorLastName" class="form-label">Efternamn</label>
+                        <input id="editNewAuthorLastName"
+                               class="form-control"
+                               @bind="_editNewAuthorLastName"
+                               placeholder="Författarens efternamn"
                                disabled="@_isUpdating" />
                     </div>
                 }
@@ -228,9 +247,11 @@ else
     private string? _editErrorMessage;
     private int? _selectedBookId;
     private int _selectedAuthorId;
-    private string _newAuthorName = "";
+    private string _newAuthorFirstName = "";
+    private string _newAuthorLastName = "";
     private int _selectedEditAuthorId;
-    private string _editNewAuthorName = "";
+    private string _editNewAuthorFirstName = "";
+    private string _editNewAuthorLastName = "";
     private bool _isSaving;
     private bool _isUpdating;
     private bool _isDeleting;
@@ -255,14 +276,19 @@ else
             return;
         }
 
-        if (_selectedAuthorId == 0 && string.IsNullOrWhiteSpace(_newAuthorName))
+        if (_selectedAuthorId == 0 &&
+            (string.IsNullOrWhiteSpace(_newAuthorFirstName) || string.IsNullOrWhiteSpace(_newAuthorLastName)))
         {
-            _errorMessage = "Välj en befintlig författare eller skriv in en ny.";
+            _errorMessage = "Välj en befintlig författare eller fyll i för- och efternamn.";
             return;
         }
 
         _newBook.AuthorId = _selectedAuthorId == 0 ? null : _selectedAuthorId;
-        _newBook.NewAuthorName = string.IsNullOrWhiteSpace(_newAuthorName) ? null : _newAuthorName;
+        _newBook.NewAuthorFirstName =
+            string.IsNullOrWhiteSpace(_newAuthorFirstName) ? null : _newAuthorFirstName;
+
+        _newBook.NewAuthorLastName =
+            string.IsNullOrWhiteSpace(_newAuthorLastName) ? null : _newAuthorLastName;
 
         _isSaving = true;
 
@@ -287,7 +313,8 @@ else
 
             _newBook = new();
             _selectedAuthorId = 0;
-            _newAuthorName = "";
+            _newAuthorFirstName = "";
+            _newAuthorLastName = "";
         }
         catch (HttpRequestException)
         {
@@ -302,17 +329,23 @@ else
     private void SelectBook(BookDto book)
     {
         _selectedBookId = book.Id;
-        _selectedEditAuthorId = _authors.FirstOrDefault(author => author.Name == book.Author)?.Id ?? 0;
-        _editNewAuthorName = "";
+        _selectedEditAuthorId = book.Author.Id;
+        _editNewAuthorFirstName = "";
+        _editNewAuthorLastName = "";
         _editedBook = new UpdateBookRequest
         {
             Title = book.Title,
             AuthorId = _selectedEditAuthorId == 0 ? null : _selectedEditAuthorId,
-            AuthorName = book.Author
         };
         _editErrorMessage = null;
         _confirmingDelete = false;
         _bookWasDeleted = false;
+    }
+
+    private static string GetAuthorName(AuthorDto author)
+    {
+        return string.Join(' ', new[] { author.FirstName, author.LastName }
+            .Where(name => !string.IsNullOrWhiteSpace(name)));
     }
 
     private async Task UpdateBookAsync()
@@ -330,14 +363,17 @@ else
             return;
         }
 
-        if (_selectedEditAuthorId == 0 && string.IsNullOrWhiteSpace(_editNewAuthorName))
+        if (_selectedEditAuthorId == 0 &&
+            (string.IsNullOrWhiteSpace(_editNewAuthorFirstName) ||
+             string.IsNullOrWhiteSpace(_editNewAuthorLastName)))
         {
-            _editErrorMessage = "Välj en befintlig författare eller skriv in en ny.";
+            _editErrorMessage = "Välj en befintlig författare eller fyll i för- och efternamn.";
             return;
         }
 
         _editedBook.AuthorId = _selectedEditAuthorId == 0 ? null : _selectedEditAuthorId;
-        _editedBook.NewAuthorName = string.IsNullOrWhiteSpace(_editNewAuthorName) ? null : _editNewAuthorName;
+        _editedBook.NewAuthorFirstName = string.IsNullOrWhiteSpace(_editNewAuthorFirstName) ? null : _editNewAuthorFirstName;
+        _editedBook.NewAuthorLastName = string.IsNullOrWhiteSpace(_editNewAuthorLastName) ? null : _editNewAuthorLastName;
 
         _isUpdating = true;
 

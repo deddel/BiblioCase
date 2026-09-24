@@ -44,7 +44,7 @@ else
                             @foreach (var author in _authors)
                             {
                                 <tr>
-                                    <td>@author.Name</td>
+                                    <td>@GetAuthorName(author)</td>
                                     <td class="text-end">
                                         <button type="button"
                                                 class="btn btn-outline-primary btn-sm"
@@ -146,9 +146,10 @@ else
 
         try
         {
-            var result = await OpenLibraryClient.SearchAuthorsAsync(author.Name);
+            var authorName = GetAuthorName(author);
+            var result = await OpenLibraryClient.SearchAuthorsAsync(authorName);
             _selectedAuthor = result?.Docs
-                .FirstOrDefault(doc => string.Equals(doc.Name?.Trim(), author.Name.Trim(), StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault(doc => string.Equals(doc.Name?.Trim(), authorName, StringComparison.OrdinalIgnoreCase))
                 ?? result?.Docs.FirstOrDefault();
 
             if (_selectedAuthor is null)
@@ -160,6 +161,12 @@ else
         {
             _errorMessage = "Kunde inte hämta information från Open Library.";
         }
+    }
+
+    private static string GetAuthorName(AuthorDto author)
+    {
+        return string.Join(' ', new[] { author.FirstName, author.LastName }
+            .Where(name => !string.IsNullOrWhiteSpace(name)));
     }
 
     private sealed class CleanupResult

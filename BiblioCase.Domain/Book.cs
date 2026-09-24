@@ -6,8 +6,10 @@ public class Book
 
     public string Title { get; set; } = string.Empty;
 
-    public int AuthorId { get; set; }
-    public Author? Author { get; set; }
+    public string? Synopsis { get; set; }
 
-    public List<Review> Reviews { get; set; } = new();
+    public int? FirstPublicationYear { get; set; }
+
+    public int AuthorId { get; set; }
+    public Author Author { get; set; } = null!;
 }
