@@ -1,7 +1,4 @@
 @inject IHttpClientFactory HttpClientFactory
-@inject OpenLibraryClient OpenLibraryClient
-
-@using BiblioCase.Infrastructure.External
 
 @page "/authors"
 @attribute [StreamRendering]
@@ -48,8 +45,13 @@ else
                                     <td class="text-end">
                                         <button type="button"
                                                 class="btn btn-outline-primary btn-sm"
-                                                @onclick="() => LoadAuthorDetailsAsync(author)">
-                                            Visa info
+                                            @onclick="() => ShowAuthor(author)">
+                                            Visa
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-outline-secondary btn-sm"
+                                                @onclick="() => EditAuthor(author)">
+                                            Ändra
                                         </button>
                                     </td>
                                 </tr>
@@ -59,22 +61,28 @@ else
                 </div>
             </div>
         </div>
-
         <div class="col-lg-6">
             @if (_selectedAuthor is not null)
             {
+                @if (_editingAuthor)
+                {
+                    <div class="mb-3">
+                        <button class="btn btn-secondary btn-sm" @onclick="CancelEdit">Avbryt</button>
+                    </div>
+                }
                 <div class="card shadow-sm">
                     <div class="card-body">
-                        <h3 class="h5 mb-3">@_selectedAuthor.Name</h3>
+                        <h3 class="h5 mb-3">@GetAuthorName(_selectedAuthor)</h3>
 
-                        @if (!string.IsNullOrWhiteSpace(_selectedAuthor.BirthDate))
+                        @if (!string.IsNullOrWhiteSpace(_selectedAuthor.Biography))
                         {
-                            <p class="mb-2"><strong>Födelsedatum:</strong> @_selectedAuthor.BirthDate</p>
+                            <p class="mb-0">@_selectedAuthor.Biography</p>
                         }
-
-                        @if (!string.IsNullOrWhiteSpace(_selectedAuthor.TopWork))
+                        else
                         {
-                            <p class="mb-0"><strong>Känd för:</strong> @_selectedAuthor.TopWork</p>
+                            <p class="text-muted mb-0">
+                                Ingen biografi finns registrerad.
+                            </p>
                         }
                     </div>
                 </div>
@@ -89,6 +97,7 @@ else
             }
         </div>
     </div>
+
 }
 
 @if (!string.IsNullOrWhiteSpace(_errorMessage))
@@ -98,10 +107,26 @@ else
 
 @code {
     private List<AuthorDto>? _authors;
-    private OpenLibraryAuthorDoc? _selectedAuthor;
+    private AuthorDto? _selectedAuthor;
     private string? _errorMessage;
     private string _cleanupMessage = "";
+    private bool _editingAuthor;
 
+    private void EditAuthor(AuthorDto author)
+    {
+        _selectedAuthor = author;
+        _editingAuthor = true;
+    }
+
+    private void ShowAuthor(AuthorDto author)
+    {
+        _selectedAuthor = author;
+        _editingAuthor = false;
+    }
+    private void CancelEdit()
+    {
+        _editingAuthor = false;
+    }
     protected override async Task OnInitializedAsync()
     {
         await LoadAuthorsAsync();
@@ -132,34 +157,10 @@ else
                 : "Inga oanvända författare hittades";
 
             await LoadAuthorsAsync();
-            _selectedAuthor = null;
         }
         catch (HttpRequestException)
         {
             _errorMessage = "Kunde inte kontakta API:et.";
-        }
-    }
-
-    private async Task LoadAuthorDetailsAsync(AuthorDto author)
-    {
-        _errorMessage = null;
-
-        try
-        {
-            var authorName = GetAuthorName(author);
-            var result = await OpenLibraryClient.SearchAuthorsAsync(authorName);
-            _selectedAuthor = result?.Docs
-                .FirstOrDefault(doc => string.Equals(doc.Name?.Trim(), authorName, StringComparison.OrdinalIgnoreCase))
-                ?? result?.Docs.FirstOrDefault();
-
-            if (_selectedAuthor is null)
-            {
-                _errorMessage = "Ingen information hittades för den här författaren i Open Library.";
-            }
-        }
-        catch (HttpRequestException)
-        {
-            _errorMessage = "Kunde inte hämta information från Open Library.";
         }
     }
 
