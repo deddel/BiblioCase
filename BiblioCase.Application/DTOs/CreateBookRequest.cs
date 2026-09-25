@@ -8,4 +8,5 @@ public class CreateBookRequest
     public int? AuthorId { get; set; }
     public string? NewAuthorFirstName { get; set; }
     public string? NewAuthorLastName { get; set; }
+    public string? NewAuthorBiography { get; set; }
 }

@@ -45,12 +45,13 @@ public class CreateBookHandler
 
             author = await _db.Authors
                 .FirstOrDefaultAsync(a =>
-                    a.FirstName == firstName &&
-                    a.LastName == lastName)
+                    a.FirstName.Trim().ToLower() == firstName.ToLower() &&
+                    a.LastName.Trim().ToLower() == lastName.ToLower())
                 ?? new Author
                 {
                     FirstName = firstName,
-                    LastName = lastName
+                    LastName = lastName,
+                    Biography = request.NewAuthorBiography?.Trim()
                 };
 
             if (author.Id == 0)
@@ -80,7 +81,8 @@ public class CreateBookHandler
             {
                 Id = author.Id,
                 FirstName = author.FirstName,
-                LastName = author.LastName
+                LastName = author.LastName,
+                Biography = author.Biography
             }
         };
     }

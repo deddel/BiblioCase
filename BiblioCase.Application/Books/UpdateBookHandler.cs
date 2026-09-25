@@ -40,6 +40,13 @@ public class UpdateBookHandler
             author = await _db.Authors
                 .FirstOrDefaultAsync(a => a.Id == request.AuthorId)
                 ?? throw new InvalidOperationException("Author not found.");
+
+            if (request.AuthorBiography is not null)
+            {
+                author.Biography = string.IsNullOrWhiteSpace(request.AuthorBiography)
+                    ? null
+                    : request.AuthorBiography.Trim();
+            }
         }
         else
         {
@@ -54,12 +61,13 @@ public class UpdateBookHandler
 
             author = await _db.Authors
                 .FirstOrDefaultAsync(a =>
-                    a.FirstName == firstName &&
-                    a.LastName == lastName)
+                    a.FirstName.Trim().ToLower() == firstName.ToLower() &&
+                    a.LastName.Trim().ToLower() == lastName.ToLower())
                 ?? new Author
                 {
                     FirstName = firstName,
-                    LastName = lastName
+                    LastName = lastName,
+                    Biography = request.NewAuthorBiography?.Trim()
                 };
 
             if (author.Id == 0)
@@ -98,7 +106,8 @@ public class UpdateBookHandler
             {
                 Id = author.Id,
                 FirstName = author.FirstName,
-                LastName = author.LastName
+                LastName = author.LastName,
+                Biography = author.Biography
             }
         };
     }

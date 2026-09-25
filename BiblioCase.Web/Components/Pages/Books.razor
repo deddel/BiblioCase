@@ -31,6 +31,7 @@ else
                     <tr>
                         <th>Titel</th>
                         <th>Författare</th>
+                        <th>Första utgivningsår</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -38,8 +39,21 @@ else
                     @foreach (var book in _books)
                     {
                         <tr>
-                            <td>@book.Title</td>
-                            <td>@GetAuthorName(book.Author)</td>
+                            <td>
+                                <div>@book.Title</div>
+                                @if (!string.IsNullOrWhiteSpace(book.Synopsis))
+                                {
+                                    <small class="text-muted">@book.Synopsis</small>
+                                }
+                            </td>
+                            <td>
+                                <div>@GetAuthorName(book.Author)</div>
+                                @if (!string.IsNullOrWhiteSpace(book.Author.Biography))
+                                {
+                                    <small class="text-muted">@book.Author.Biography</small>
+                                }
+                            </td>
+                            <td>@(book.FirstPublicationYear?.ToString() ?? "")</td>
                             <td class="text-end">
                                 <button type="button"
                                         class="btn btn-outline-primary btn-sm"
@@ -84,6 +98,23 @@ else
                 </div>
 
                 <div class="mb-3">
+                    <label for="bookSynopsis" class="form-label">Synopsis</label>
+                    <textarea id="bookSynopsis"
+                              class="form-control"
+                              rows="3"
+                              @bind="_newBook.Synopsis"
+                              disabled="@_isSaving"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="bookPublicationYear" class="form-label">Första utgivningsår</label>
+                    <InputNumber id="bookPublicationYear"
+                                 class="form-control"
+                                 @bind-Value="_newBook.FirstPublicationYear"
+                                 disabled="@_isSaving" />
+                </div>
+
+                <div class="mb-3">
                     <label for="selectedAuthorId" class="form-label">Välj befintlig författare</label>
                     <select id="selectedAuthorId"
                             class="form-select"
@@ -103,7 +134,7 @@ else
                            class="form-control"
                            @bind="_newAuthorFirstName"
                            placeholder="Författarens förnamn"
-                           disabled="@_isSaving" />
+                           disabled="@(_isSaving || _selectedAuthorId != 0)" />
                 </div>
 
                 <div class="mb-3">
@@ -112,7 +143,16 @@ else
                            class="form-control"
                            @bind="_newAuthorLastName"
                            placeholder="Författarens efternamn"
-                           disabled="@_isSaving" />
+                           disabled="@(_isSaving || _selectedAuthorId != 0)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="newAuthorBiography" class="form-label">Författarbiografi</label>
+                    <textarea id="newAuthorBiography"
+                              class="form-control"
+                              rows="3"
+                              @bind="_newAuthorBiography"
+                              disabled="@(_isSaving || _selectedAuthorId != 0)"></textarea>
                 </div>
             </div>
 
@@ -168,10 +208,28 @@ else
                     </div>
 
                     <div class="mb-3">
+                        <label for="editBookSynopsis" class="form-label">Synopsis</label>
+                        <textarea id="editBookSynopsis"
+                                  class="form-control"
+                                  rows="3"
+                                  @bind="_editedBook.Synopsis"
+                                  disabled="@_isUpdating"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editBookPublicationYear" class="form-label">Första utgivningsår</label>
+                        <InputNumber id="editBookPublicationYear"
+                                     class="form-control"
+                                     @bind-Value="_editedBook.FirstPublicationYear"
+                                     disabled="@_isUpdating" />
+                    </div>
+
+                    <div class="mb-3">
                         <label for="editBookAuthor" class="form-label">Välj befintlig författare</label>
                         <select id="editBookAuthor"
                                 class="form-select"
                                 @bind="_selectedEditAuthorId"
+                                @bind:after="OnEditAuthorChanged"
                                 disabled="@_isUpdating">
                             <option value="0">-- Välj författare --</option>
                             @foreach (var author in _authors)
@@ -187,7 +245,7 @@ else
                                class="form-control"
                                @bind="_editNewAuthorFirstName"
                                placeholder="Författarens förnamn"
-                               disabled="@_isUpdating" />
+                               disabled="@(_isUpdating || _selectedEditAuthorId != 0)" />
                     </div>
 
                     <div class="mb-3">
@@ -196,8 +254,31 @@ else
                                class="form-control"
                                @bind="_editNewAuthorLastName"
                                placeholder="Författarens efternamn"
-                               disabled="@_isUpdating" />
+                               disabled="@(_isUpdating || _selectedEditAuthorId != 0)" />
                     </div>
+
+                    @if (_selectedEditAuthorId != 0)
+                    {
+                        <div class="mb-3">
+                            <label for="editAuthorBiography" class="form-label">Författarbiografi</label>
+                            <textarea id="editAuthorBiography"
+                                      class="form-control"
+                                      rows="3"
+                                      @bind="_editAuthorBiography"
+                                      disabled="@_isUpdating"></textarea>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <label for="editNewAuthorBiography" class="form-label">Författarbiografi</label>
+                            <textarea id="editNewAuthorBiography"
+                                      class="form-control"
+                                      rows="3"
+                                      @bind="_editNewAuthorBiography"
+                                      disabled="@_isUpdating"></textarea>
+                        </div>
+                    }
                 }
             </div>
 
@@ -249,9 +330,12 @@ else
     private int _selectedAuthorId;
     private string _newAuthorFirstName = "";
     private string _newAuthorLastName = "";
+    private string _newAuthorBiography = "";
     private int _selectedEditAuthorId;
+    private string _editAuthorBiography = "";
     private string _editNewAuthorFirstName = "";
     private string _editNewAuthorLastName = "";
+    private string _editNewAuthorBiography = "";
     private bool _isSaving;
     private bool _isUpdating;
     private bool _isDeleting;
@@ -289,6 +373,8 @@ else
 
         _newBook.NewAuthorLastName =
             string.IsNullOrWhiteSpace(_newAuthorLastName) ? null : _newAuthorLastName;
+        _newBook.NewAuthorBiography =
+            string.IsNullOrWhiteSpace(_newAuthorBiography) ? null : _newAuthorBiography;
 
         _isSaving = true;
 
@@ -309,12 +395,18 @@ else
             {
                 _books ??= [];
                 _books.Add(createdBook);
+
+                if (_authors.All(author => author.Id != createdBook.Author.Id))
+                {
+                    _authors.Add(createdBook.Author);
+                }
             }
 
             _newBook = new();
             _selectedAuthorId = 0;
             _newAuthorFirstName = "";
             _newAuthorLastName = "";
+            _newAuthorBiography = "";
         }
         catch (HttpRequestException)
         {
@@ -330,11 +422,15 @@ else
     {
         _selectedBookId = book.Id;
         _selectedEditAuthorId = book.Author.Id;
+        _editAuthorBiography = book.Author.Biography ?? "";
         _editNewAuthorFirstName = "";
         _editNewAuthorLastName = "";
+        _editNewAuthorBiography = "";
         _editedBook = new UpdateBookRequest
         {
             Title = book.Title,
+            Synopsis = book.Synopsis,
+            FirstPublicationYear = book.FirstPublicationYear,
             AuthorId = _selectedEditAuthorId == 0 ? null : _selectedEditAuthorId,
         };
         _editErrorMessage = null;
@@ -347,6 +443,19 @@ else
         return string.Join(' ', new[] { author.FirstName, author.LastName }
             .Where(name => !string.IsNullOrWhiteSpace(name)));
     }
+
+    private void OnEditAuthorChanged()
+{
+    if (_selectedEditAuthorId == 0)
+    {
+        _editAuthorBiography = "";
+        return;
+    }
+
+    AuthorDto? author = _authors.FirstOrDefault(a => a.Id == _selectedEditAuthorId);
+
+    _editAuthorBiography = author?.Biography ?? "";
+}
 
     private async Task UpdateBookAsync()
     {
@@ -372,8 +481,10 @@ else
         }
 
         _editedBook.AuthorId = _selectedEditAuthorId == 0 ? null : _selectedEditAuthorId;
+        _editedBook.AuthorBiography = _selectedEditAuthorId == 0 ? null : _editAuthorBiography;
         _editedBook.NewAuthorFirstName = string.IsNullOrWhiteSpace(_editNewAuthorFirstName) ? null : _editNewAuthorFirstName;
         _editedBook.NewAuthorLastName = string.IsNullOrWhiteSpace(_editNewAuthorLastName) ? null : _editNewAuthorLastName;
+        _editedBook.NewAuthorBiography = string.IsNullOrWhiteSpace(_editNewAuthorBiography) ? null : _editNewAuthorBiography;
 
         _isUpdating = true;
 
@@ -394,6 +505,11 @@ else
             if (updatedBook is not null && index >= 0)
             {
                 _books![index] = updatedBook;
+
+                if (_authors.All(author => author.Id != updatedBook.Author.Id))
+                {
+                    _authors.Add(updatedBook.Author);
+                }
             }
         }
         catch (HttpRequestException)

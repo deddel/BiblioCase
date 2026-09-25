@@ -27,7 +27,8 @@ public class GetBooksHandler
                 {
                     Id = b.Author!.Id,
                     FirstName = b.Author.FirstName,
-                    LastName = b.Author.LastName
+                    LastName = b.Author.LastName,
+                    Biography = b.Author.Biography
                 }
             })
             .ToListAsync();
