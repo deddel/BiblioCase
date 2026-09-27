@@ -20,6 +20,10 @@ builder.Services.AddScoped<CreateBookHandler>();
 builder.Services.AddScoped<UpdateBookHandler>();
 builder.Services.AddScoped<DeleteBookHandler>();
 builder.Services.AddScoped<GetAuthorsHandler>();
+builder.Services.AddScoped<GetAuthorByIdHandler>();
+builder.Services.AddScoped<CreateAuthorHandler>();
+builder.Services.AddScoped<UpdateAuthorHandler>();
+builder.Services.AddScoped<DeleteAuthorHandler>();
 builder.Services.AddScoped<DeleteUnusedAuthorsHandler>();
 builder.Services.AddScoped<GetWeatherForecastHandler>();
 builder.Services.AddDbContext<IAppDbContext, AppDbContext>(options =>
@@ -118,6 +122,64 @@ app.MapGet("/authors", async (GetAuthorsHandler handler) =>
 {
     var authors = await handler.Handle();
     return Results.Ok(authors);
+});
+
+app.MapGet("/authors/{id:int}", async (int id, GetAuthorByIdHandler handler) =>
+{
+    var author = await handler.Handle(id);
+
+    if (author is null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(author);
+});
+
+app.MapPost("/authors", async (CreateAuthorRequest request, CreateAuthorHandler handler) =>
+{
+    if (string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
+    {
+        return Results.BadRequest();
+    }
+
+    var author = await handler.Handle(request);
+
+    if (author is null)
+    {
+        return Results.BadRequest();
+    }
+
+    return Results.Created($"/authors/{author.Id}", author);
+});
+
+app.MapPut("/authors/{id:int}", async (int id, UpdateAuthorRequest request, UpdateAuthorHandler handler) =>
+{
+    if (string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
+    {
+        return Results.BadRequest();
+    }
+
+    var author = await handler.Handle(id, request);
+
+    if (author is null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(author);
+});
+
+app.MapDelete("/authors/{id:int}", async (int id, DeleteAuthorHandler handler) =>
+{
+    var result = await handler.Handle(id);
+
+    return result switch
+    {
+        DeleteAuthorResult.NotFound => Results.NotFound(),
+        DeleteAuthorResult.InUse => Results.Conflict("Författaren har böcker kopplade till sig och kan inte tas bort."),
+        _ => Results.NoContent()
+    };
 });
 
 app.MapDelete("/authors/unused", async (DeleteUnusedAuthorsHandler handler) =>

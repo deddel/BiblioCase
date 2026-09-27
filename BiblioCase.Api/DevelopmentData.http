@@ -4,11 +4,12 @@ POST http://localhost:5176/books
 Content-Type: application/json
 
 {
-  "title": "Dune",
+  "title": "Arrakis - ökenplaneten",
+  "synopsis": "En science fiction-roman om politik, religion och makt på den ökenplanet Arrakis.",
+  "firstPublicationYear": 1965,
   "newAuthorFirstName": "Frank",
   "newAuthorLastName": "Herbert",
-  "synopsis": "A science fiction novel about politics, religion and power on the desert planet Arrakis.",
-  "firstPublicationYear": 1965
+  "newAuthorBiography": "Frank Herbert var en amerikansk science fiction-författare som är mest känd för Dune-serien."
 }
 
 ### 
@@ -16,10 +17,10 @@ POST http://localhost:5176/books
 Content-Type: application/json
 
 {
-  "title": "Children of Dune",
-  "authorId": 1,
-  "synopsis": "The second sequel to Dune.",
-  "firstPublicationYear": 1976
+  "title": "Ökenplanetens Messias",
+  "synopsis": "Uppföljaren till Arrakis - ökenplaneten.",
+  "firstPublicationYear": 1976,
+  "authorId": 8
 }
 ###
 ###
@@ -28,11 +29,12 @@ POST http://localhost:5176/books
 Content-Type: application/json
 
 {
-  "title": "A Perfect Spy",
+  "title": "En perfekt spion",
+  "synopsis": "En krönika om underrättelseofficeren Magnus Pyms dubbelliv.",
+  "firstPublicationYear": 1986,
   "newAuthorFirstName": "John",
   "newAuthorLastName": "le Carré",
-  "synopsis": "A chronicle of the double life of intelligence officer Magnus Pym.",
-  "firstPublicationYear": 1986
+  "newAuthorBiography": "John le Carré var en brittisk författare känd för sina spionromaner."
 }
 
 ###
@@ -41,11 +43,12 @@ POST http://localhost:5176/books
 Content-Type: application/json
 
 {
-  "title": "The Hobbit",
+  "title": "Bilbo - En hobbits äventyr",
+  "synopsis": "Bilbo Baggins reser tillsammans med dvärgar för att återta deras bergshem från Smaug.",
+  "firstPublicationYear": 1937,
   "newAuthorFirstName": "J.R.R.",
   "newAuthorLastName": "Tolkien",
-  "synopsis": "Bilbo Baggins journeys with dwarves to reclaim their mountain home from Smaug.",
-  "firstPublicationYear": 1937
+  "newAuthorBiography": "J.R.R. Tolkien var en engelsk författare, poet, filolog och akademiker, mest känd för Bilbo – En hobbits äventyr och Sagan om ringen."
 }
 
 ###
@@ -54,11 +57,12 @@ POST http://localhost:5176/books
 Content-Type: application/json
 
 {
-  "title": "Foundation",
+  "title": "Stiftelsen",
+  "synopsis": "En matematiker utvecklar psykohistorik för att rädda den galaktiska civilisationen från kollaps.",
+  "firstPublicationYear": 1951,
   "newAuthorFirstName": "Isaac",
   "newAuthorLastName": "Asimov",
-  "synopsis": "A mathematician develops psychohistory to save galactic civilization from collapse.",
-  "firstPublicationYear": 1951
+  "newAuthorBiography": "Isaac Asimov var en ryskfödd amerikansk science fiction-författare och professor i biokemi, känd för Stiftelsen-serien."
 }
 
 ###
@@ -67,11 +71,12 @@ POST http://localhost:5176/books
 Content-Type: application/json
 
 {
-  "title": "The Catcher in the Rye",
+  "title": "Räddaren i nöden",
+  "synopsis": "Holden Caulfield vandrar genom New York City medan han kämpar med förlust och alienerande känslor.",
+  "firstPublicationYear": 1951,
   "newAuthorFirstName": "J.D.",
   "newAuthorLastName": "Salinger",
-  "synopsis": "Holden Caulfield wanders New York City while struggling with loss and alienating feelings.",
-  "firstPublicationYear": 1951
+  "newAuthorBiography": "J.D. Salinger var en amerikansk författare känd för sin roman Räddaren i nöden."
 }
 
 ###
@@ -80,11 +85,12 @@ POST http://localhost:5176/books
 Content-Type: application/json
 
 {
-  "title": "To Kill a Mockingbird",
+  "title": "Dödssynden",
+  "synopsis": "Advokaten Atticus Finch försvarar en svart man som orättvist anklagas för ett brott i Alabama.",
+  "firstPublicationYear": 1960,
   "newAuthorFirstName": "Harper",
   "newAuthorLastName": "Lee",
-  "synopsis": "Lawyer Atticus Finch defends a Black man unjustly accused of a crime in Alabama.",
-  "firstPublicationYear": 1960
+  "newAuthorBiography": "Harper Lee var en amerikansk romanförfattare mest känd för Dödssynden."
 }
 
 ###
@@ -94,10 +100,11 @@ Content-Type: application/json
 
 {
   "title": "1984",
+  "synopsis": "En dystopisk berättelse om totalitär övervakning och tankekontroll under Storebror.",
+  "firstPublicationYear": 1949,
   "newAuthorFirstName": "George",
   "newAuthorLastName": "Orwell",
-  "synopsis": "A dystopian tale of totalitarian surveillance and thought control under Big Brother.",
-  "firstPublicationYear": 1949
+  "newAuthorBiography": "George Orwell var en engelsk romanförfattare, essäist, journalist och kritiker, känd för sina dystopiska verk."
 }
 
 ###
@@ -106,11 +113,12 @@ POST http://localhost:5176/books
 Content-Type: application/json
 
 {
-  "title": "Brave New World",
+  "title": "Du sköna nya värld",
+  "synopsis": "Ett futuristiskt samhälle förlitar sig på genetisk ingenjörskonst, betingning och soma för att upprätthålla den sociala ordningen.",
+  "firstPublicationYear": 1932,
   "newAuthorFirstName": "Aldous",
   "newAuthorLastName": "Huxley",
-  "synopsis": "A futuristic society relies on genetic engineering, conditioning, and soma to maintain social order.",
-  "firstPublicationYear": 1932
+  "newAuthorBiography": "Aldous Huxley var en engelsk författare och filosof, känd för sin roman Du sköna nya värld."
 }
 
 ###
@@ -119,11 +127,12 @@ POST http://localhost:5176/books
 Content-Type: application/json
 
 {
-  "title": "The Great Gatsby",
+  "title": "Den store Gatsby",
+  "synopsis": "En mystisk miljonär jagar sin besatthet av Daisy Buchanan under 1920-talets glada dagar.",
+  "firstPublicationYear": 1925,
   "newAuthorFirstName": "F. Scott",
   "newAuthorLastName": "Fitzgerald",
-  "synopsis": "A mysterious millionaire pursues his obsession with Daisy Buchanan during the Roaring Twenties.",
-  "firstPublicationYear": 1925
+  "newAuthorBiography": "F. Scott Fitzgerald var en amerikansk romanförfattare och novellförfattare, allmänt ansedd som en av de största amerikanska författarna under 1900-talet."
 }
 
 ###
@@ -133,8 +142,49 @@ Content-Type: application/json
 
 {
   "title": "Moby Dick",
+  "synopsis": "Kapten Ahab jagar besatt den gigantiska vita valen som lemlästat honom.",
+  "firstPublicationYear": 1851,
   "newAuthorFirstName": "Herman",
   "newAuthorLastName": "Melville",
-  "synopsis": "Captain Ahab obsessively hunts the giant white whale that maimed him.",
-  "firstPublicationYear": 1851
+  "newAuthorBiography": "Herman Melville var en amerikansk romanförfattare, novellförfattare och poet, mest känd för sin roman Moby Dick."
 }
+
+###
+POST http://localhost:5176/books
+Content-Type: application/json
+
+{
+  "title": "Tom Sawyers äventyr",
+  "synopsis": "Tom Sawyer, en ung pojke som växer upp vid Mississippi-floden, upplever en rad äventyr och upptåg.",
+  "firstPublicationYear": 1876,
+  "newAuthorFirstName": "Mark",
+  "newAuthorLastName": "Twain",
+  "newAuthorBiography": "Mark Twain var en amerikansk författare och humorist, mest känd för sina romaner Tom Sawyers äventyr och Huckleberry Finns äventyr."
+}
+### 
+POST http://localhost:5176/books
+Content-Type: application/json
+
+{
+  "title": "Huckleberry Finns äventyr",
+  "synopsis": "Huckleberry Finn, en ung pojke som rymmer från sitt hem, upplever en rad äventyr längs Mississippi-floden.",
+  "firstPublicationYear": 1884,
+  "newAuthorFirstName": "Mark",
+  "newAuthorLastName": "Twain",
+  "newAuthorBiography": "Mark Twain var en amerikansk författare och humorist, mest känd för sina romaner Tom Sawyers äventyr och Huckleberry Finns äventyr."
+}
+
+###
+
+POST http://localhost:5176/books
+Content-Type: application/json
+
+{
+  "title": "Nils Holgerssons underbara resa genom Sverige",
+  "synopsis": "Nils Holgersson, en ung pojke som förvandlas till en liten tomte och reser genom Sverige på ryggen av en gås, upplever en rad äventyr och lär sig om landets geografi och kultur.",
+  "firstPublicationYear": 1906,
+  "newAuthorFirstName": "Selma",
+  "newAuthorLastName": "Lagerlöf",
+  "newAuthorBiography": "Selma Lagerlöf var en svensk författare och den första kvinnan att tilldelas Nobelpriset i litteratur, känd för sina romaner som Nils Holgerssons underbara resa genom Sverige."
+}
+

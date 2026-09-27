@@ -14,11 +14,17 @@
 }
 else
 {
-    <div class="d-flex justify-content-end mb-3">
+    <div class="d-flex justify-content-end mb-3 gap-2">
         <button type="button"
                 class="btn btn-outline-secondary btn-sm"
                 @onclick="CleanupUnusedAuthorsAsync">
             @(string.IsNullOrWhiteSpace(_cleanupMessage) ? "Ta bort oanvända författare" : _cleanupMessage)
+        </button>
+        <button type="button"
+                class="btn btn-primary btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#addAuthorModal">
+            Lägg till författare
         </button>
     </div>
 
@@ -66,26 +72,75 @@ else
             {
                 @if (_editingAuthor)
                 {
-                    <div class="mb-3">
-                        <button class="btn btn-secondary btn-sm" @onclick="CancelEdit">Avbryt</button>
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            @if (!string.IsNullOrWhiteSpace(_editErrorMessage))
+                            {
+                                <div class="alert alert-danger" role="alert">@_editErrorMessage</div>
+                            }
+
+                            <div class="mb-3">
+                                <label for="editAuthorFirstName" class="form-label">Förnamn</label>
+                                <input id="editAuthorFirstName"
+                                       class="form-control"
+                                       @bind="_editedAuthor.FirstName"
+                                       disabled="@_isSavingEdit" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="editAuthorLastName" class="form-label">Efternamn</label>
+                                <input id="editAuthorLastName"
+                                       class="form-control"
+                                       @bind="_editedAuthor.LastName"
+                                       disabled="@_isSavingEdit" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="editAuthorBiography" class="form-label">Biografi</label>
+                                <textarea id="editAuthorBiography"
+                                          class="form-control"
+                                          rows="4"
+                                          @bind="_editedAuthor.Biography"
+                                          disabled="@_isSavingEdit"></textarea>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <button type="button"
+                                        class="btn btn-outline-danger"
+                                        @onclick="DeleteAuthorAsync"
+                                        disabled="@(_isSavingEdit || _isDeletingAuthor)">
+                                    @(_confirmingAuthorDelete ? "Bekräfta borttagning" : "Ta bort författare")
+                                </button>
+
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-secondary" @onclick="CancelEdit" disabled="@(_isSavingEdit || _isDeletingAuthor)">Avbryt</button>
+                                    <button class="btn btn-primary" @onclick="UpdateAuthorAsync" disabled="@(_isSavingEdit || _isDeletingAuthor)">
+                                        @(_isSavingEdit ? "Sparar..." : "Spara ändringar")
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 }
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h3 class="h5 mb-3">@GetAuthorName(_selectedAuthor)</h3>
+                else
+                {
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h3 class="h5 mb-3">@GetAuthorName(_selectedAuthor)</h3>
 
-                        @if (!string.IsNullOrWhiteSpace(_selectedAuthor.Biography))
-                        {
-                            <p class="mb-0">@_selectedAuthor.Biography</p>
-                        }
-                        else
-                        {
-                            <p class="text-muted mb-0">
-                                Ingen biografi finns registrerad.
-                            </p>
-                        }
+                            @if (!string.IsNullOrWhiteSpace(_selectedAuthor.Biography))
+                            {
+                                <p class="mb-0">@_selectedAuthor.Biography</p>
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-0">
+                                    Ingen biografi finns registrerad.
+                                </p>
+                            }
+                        </div>
                     </div>
-                </div>
+                }
             }
             else
             {
@@ -105,17 +160,86 @@ else
     <div class="alert alert-warning mt-3" role="alert">@_errorMessage</div>
 }
 
+<div class="modal fade" id="addAuthorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Lägg till författare</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+                @if (!string.IsNullOrWhiteSpace(_createErrorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">@_createErrorMessage</div>
+                }
+
+                <div class="mb-3">
+                    <label for="newAuthorFirstName" class="form-label">Förnamn</label>
+                    <input id="newAuthorFirstName"
+                           class="form-control"
+                           @bind="_newAuthor.FirstName"
+                           disabled="@_isCreatingAuthor" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="newAuthorLastName" class="form-label">Efternamn</label>
+                    <input id="newAuthorLastName"
+                           class="form-control"
+                           @bind="_newAuthor.LastName"
+                           disabled="@_isCreatingAuthor" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="newAuthorBiography" class="form-label">Biografi</label>
+                    <textarea id="newAuthorBiography"
+                              class="form-control"
+                              rows="3"
+                              @bind="_newAuthor.Biography"
+                              disabled="@_isCreatingAuthor"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Avbryt</button>
+                <button type="button" class="btn btn-primary" @onclick="CreateAuthorAsync" disabled="@_isCreatingAuthor">
+                    @(_isCreatingAuthor ? "Sparar..." : "Spara författare")
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @code {
     private List<AuthorDto>? _authors;
     private AuthorDto? _selectedAuthor;
+    private UpdateAuthorRequest _editedAuthor = new();
+    private CreateAuthorRequest _newAuthor = new();
     private string? _errorMessage;
+    private string? _editErrorMessage;
+    private string? _createErrorMessage;
     private string _cleanupMessage = "";
     private bool _editingAuthor;
+    private bool _isSavingEdit;
+    private bool _isDeletingAuthor;
+    private bool _confirmingAuthorDelete;
+    private bool _isCreatingAuthor;
 
     private void EditAuthor(AuthorDto author)
     {
         _selectedAuthor = author;
         _editingAuthor = true;
+        _editErrorMessage = null;
+        _confirmingAuthorDelete = false;
+        _editedAuthor = new UpdateAuthorRequest
+        {
+            FirstName = author.FirstName,
+            LastName = author.LastName,
+            Biography = author.Biography
+        };
     }
 
     private void ShowAuthor(AuthorDto author)
@@ -126,6 +250,7 @@ else
     private void CancelEdit()
     {
         _editingAuthor = false;
+        _confirmingAuthorDelete = false;
     }
     protected override async Task OnInitializedAsync()
     {
@@ -136,6 +261,143 @@ else
     {
         var client = HttpClientFactory.CreateClient("BiblioCase.Api");
         _authors = await client.GetFromJsonAsync<List<AuthorDto>>("authors");
+    }
+
+    private async Task CreateAuthorAsync()
+    {
+        _createErrorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(_newAuthor.FirstName) || string.IsNullOrWhiteSpace(_newAuthor.LastName))
+        {
+            _createErrorMessage = "Fyll i för- och efternamn.";
+            return;
+        }
+
+        _isCreatingAuthor = true;
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("BiblioCase.Api");
+            var response = await client.PostAsJsonAsync("authors", _newAuthor);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _createErrorMessage = "Författaren kunde inte sparas.";
+                return;
+            }
+
+            _newAuthor = new CreateAuthorRequest();
+            await LoadAuthorsAsync();
+        }
+        catch (HttpRequestException)
+        {
+            _createErrorMessage = "Kunde inte kontakta API:et.";
+        }
+        finally
+        {
+            _isCreatingAuthor = false;
+        }
+    }
+
+    private async Task UpdateAuthorAsync()
+    {
+        if (_selectedAuthor is null)
+        {
+            return;
+        }
+
+        _editErrorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(_editedAuthor.FirstName) || string.IsNullOrWhiteSpace(_editedAuthor.LastName))
+        {
+            _editErrorMessage = "Fyll i för- och efternamn.";
+            return;
+        }
+
+        _isSavingEdit = true;
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("BiblioCase.Api");
+            var response = await client.PutAsJsonAsync($"authors/{_selectedAuthor.Id}", _editedAuthor);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _editErrorMessage = "Författaren kunde inte uppdateras.";
+                return;
+            }
+
+            var updatedAuthor = await response.Content.ReadFromJsonAsync<AuthorDto>();
+
+            if (updatedAuthor is not null)
+            {
+                _selectedAuthor = updatedAuthor;
+
+                var index = _authors?.FindIndex(a => a.Id == updatedAuthor.Id) ?? -1;
+                if (index >= 0 && _authors is not null)
+                {
+                    _authors[index] = updatedAuthor;
+                }
+            }
+
+            _editingAuthor = false;
+        }
+        catch (HttpRequestException)
+        {
+            _editErrorMessage = "Kunde inte kontakta API:et.";
+        }
+        finally
+        {
+            _isSavingEdit = false;
+        }
+    }
+
+    private async Task DeleteAuthorAsync()
+    {
+        if (_selectedAuthor is null)
+        {
+            return;
+        }
+
+        if (!_confirmingAuthorDelete)
+        {
+            _confirmingAuthorDelete = true;
+            return;
+        }
+
+        _isDeletingAuthor = true;
+        _editErrorMessage = null;
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("BiblioCase.Api");
+            var response = await client.DeleteAsync($"authors/{_selectedAuthor.Id}");
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                _editErrorMessage = "Författaren har böcker kopplade till sig och kan inte tas bort.";
+                return;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _editErrorMessage = "Författaren kunde inte tas bort.";
+                return;
+            }
+
+            _authors?.RemoveAll(a => a.Id == _selectedAuthor.Id);
+            _selectedAuthor = null;
+            _editingAuthor = false;
+        }
+        catch (HttpRequestException)
+        {
+            _editErrorMessage = "Kunde inte kontakta API:et.";
+        }
+        finally
+        {
+            _isDeletingAuthor = false;
+            _confirmingAuthorDelete = false;
+        }
     }
 
     private async Task CleanupUnusedAuthorsAsync()
