@@ -76,14 +76,19 @@ app.MapPost("/books", async (CreateBookRequest request, CreateBookHandler handle
         return Results.BadRequest();
     }
 
-    var book = await handler.Handle(request);
+    var result = await handler.Handle(request);
 
-    if (book is null)
+    if (result.AuthorNotFound)
+    {
+        return Results.NotFound();
+    }
+
+    if (result.Book is null)
     {
         return Results.BadRequest();
     }
 
-    return Results.Created($"/books/{book.Id}", book);
+    return Results.Created($"/books/{result.Book.Id}", result.Book);
 });
 
 app.MapPut("/books/{id:int}", async (int id, UpdateBookRequest request, UpdateBookHandler handler) =>

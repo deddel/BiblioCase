@@ -15,22 +15,28 @@ public class CreateBookHandler
         _db = db;
     }
 
- public async Task<BookDto?> Handle(CreateBookRequest request)
+    public async Task<CreateBookResult> Handle(CreateBookRequest request)
     {
         var title = request.Title.Trim();
 
         if (string.IsNullOrWhiteSpace(title))
         {
-            return null;
+            return new CreateBookResult(null);
         }
 
         Author author;
 
         if (request.AuthorId is > 0)
         {
-            author = await _db.Authors
-                .FirstOrDefaultAsync(a => a.Id == request.AuthorId)
-                ?? throw new InvalidOperationException("Author not found.");
+            var existingAuthor = await _db.Authors
+                .FirstOrDefaultAsync(a => a.Id == request.AuthorId);
+
+            if (existingAuthor is null)
+            {
+                return new CreateBookResult(null, AuthorNotFound: true);
+            }
+
+            author = existingAuthor;
         }
         else
         {
@@ -40,7 +46,7 @@ public class CreateBookHandler
             if (string.IsNullOrWhiteSpace(firstName) ||
                 string.IsNullOrWhiteSpace(lastName))
             {
-                return null;
+                return new CreateBookResult(null);
             }
 
             author = await _db.Authors
@@ -71,7 +77,7 @@ public class CreateBookHandler
         _db.Books.Add(book);
         await _db.SaveChangesAsync();
 
-        return new BookDto
+        return new CreateBookResult(new BookDto
         {
             Id = book.Id,
             Title = book.Title,
@@ -84,6 +90,6 @@ public class CreateBookHandler
                 LastName = author.LastName,
                 Biography = author.Biography
             }
-        };
+        });
     }
 }
