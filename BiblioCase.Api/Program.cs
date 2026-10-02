@@ -2,7 +2,6 @@ using BiblioCase.Application.Authors;
 using BiblioCase.Application.Books;
 using BiblioCase.Application.DTOs;
 using BiblioCase.Application.Interfaces;
-using BiblioCase.Application.Weather;
 using BiblioCase.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -25,7 +24,6 @@ builder.Services.AddScoped<CreateAuthorHandler>();
 builder.Services.AddScoped<UpdateAuthorHandler>();
 builder.Services.AddScoped<DeleteAuthorHandler>();
 builder.Services.AddScoped<DeleteUnusedAuthorsHandler>();
-builder.Services.AddScoped<GetWeatherForecastHandler>();
 builder.Services.AddDbContext<IAppDbContext, AppDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
 
@@ -40,13 +38,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.MapGet("/weatherforecast", (GetWeatherForecastHandler handler) =>
-{
-    var forecast = handler.Handle();
-    return Results.Ok(forecast);
-})
-.WithName("GetWeatherForecast");
 
 app.MapGet("/books", async (GetBooksHandler handler) =>
 {
