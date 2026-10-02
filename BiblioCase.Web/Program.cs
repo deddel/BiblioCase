@@ -2,9 +2,12 @@ using BiblioCase.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var apiBaseUrl = builder.Configuration["Api:BaseUrl"]
+    ?? throw new InvalidOperationException("Api:BaseUrl is not configured.");
+
 builder.Services.AddHttpClient("BiblioCase.Api", client =>
 {
-    client.BaseAddress = new Uri("http://localhost:5176/");
+    client.BaseAddress = new Uri(apiBaseUrl);
 });
 
 // Add services to the container.
