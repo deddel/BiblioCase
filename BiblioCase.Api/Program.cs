@@ -1,9 +1,8 @@
+using BiblioCase.Application;
 using BiblioCase.Application.Authors;
 using BiblioCase.Application.Books;
 using BiblioCase.Application.DTOs;
-using BiblioCase.Application.Interfaces;
 using BiblioCase.Infrastructure;
-using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,19 +12,8 @@ var dbPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, 
 
 // Add services to the container.
 builder.Services.AddOpenApi();
-builder.Services.AddScoped<GetBooksHandler>();
-builder.Services.AddScoped<GetBookByIdHandler>();
-builder.Services.AddScoped<CreateBookHandler>();
-builder.Services.AddScoped<UpdateBookHandler>();
-builder.Services.AddScoped<DeleteBookHandler>();
-builder.Services.AddScoped<GetAuthorsHandler>();
-builder.Services.AddScoped<GetAuthorByIdHandler>();
-builder.Services.AddScoped<CreateAuthorHandler>();
-builder.Services.AddScoped<UpdateAuthorHandler>();
-builder.Services.AddScoped<DeleteAuthorHandler>();
-builder.Services.AddScoped<DeleteUnusedAuthorsHandler>();
-builder.Services.AddDbContext<IAppDbContext, AppDbContext>(options =>
-    options.UseSqlite($"Data Source={dbPath}"));
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure($"Data Source={dbPath}");
 
 var app = builder.Build();
 
