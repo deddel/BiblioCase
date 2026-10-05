@@ -6,7 +6,7 @@ The application is built with:
 - ASP.NET Core Web API
 - Blazor
 - Entity Framework Core
-- SQLite
+- PostgreSQL
 
 The application is being developed as a demo project and is intended
 to demonstrate modern .NET development, web APIs, database access and
