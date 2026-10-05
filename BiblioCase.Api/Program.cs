@@ -7,13 +7,13 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Path to SQLite database
-var dbPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "data", "BiblioCase.db"));
+// Get the connection string for the PostgreSQL database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 // Add services to the container.
 builder.Services.AddOpenApi();
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure($"Data Source={dbPath}");
+builder.Services.AddInfrastructure(connectionString!);
 
 var app = builder.Build();
 
