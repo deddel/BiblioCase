@@ -3,51 +3,19 @@
         <a href="">BiblioCase</a>
     </div>
 
-    <div class="navbar-links">
-        <NavLink href="books">
-            Böcker
+    <input type="checkbox" title="Meny" aria-label="Meny" class="nav-toggle" />
+
+    <div class="navbar-links" onclick="document.querySelector('.nav-toggle').checked = false">
+        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+            <i class="bi bi-house" aria-hidden="true"></i> Hem
         </NavLink>
 
-        <NavLink href="authors">
-            Författare
+        <NavLink class="nav-link" href="books">
+            <i class="bi bi-book" aria-hidden="true"></i> Böcker
         </NavLink>
 
-        <NavLink href="publishers">
-            Förlag
+        <NavLink class="nav-link" href="authors">
+            <i class="bi bi-people" aria-hidden="true"></i> Författare
         </NavLink>
     </div>
 </nav>
-
-
-@* <div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">BiblioCase.Web</a>
-    </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="books">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Books
-            </NavLink>
-        </div>
-
-
-
-    </nav>
-</div> *@
