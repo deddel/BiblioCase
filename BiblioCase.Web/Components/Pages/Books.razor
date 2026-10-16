@@ -28,6 +28,16 @@ else
                 </div>
 
                 <div class="card-body p-0">
+                    <div class="p-2 border-bottom">
+                        <input type="search"
+                               class="form-control form-control-sm"
+                               placeholder="Sök på titel eller författare"
+                               aria-label="Sök böcker"
+                               @bind="_searchText"
+                               @bind:event="oninput"
+                               @bind:after="() => _page = 1" />
+                    </div>
+
                     <table class="table table-striped mb-0">
                         <thead>
                             <tr>
@@ -38,7 +48,7 @@ else
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var book in _books)
+                            @foreach (var book in PagedBooks)
                             {
                                 <tr class="@(book.Id == _viewedBookId ? "table-active" : null)">
                                     <td>@book.Title</td>
@@ -47,22 +57,51 @@ else
                                     <td class="text-end text-nowrap">
                                         <button type="button"
                                                 class="btn btn-outline-primary btn-sm"
+                                                title="Visa"
+                                                aria-label="Visa"
                                                 @onclick="() => _viewedBookId = book.Id">
-                                            Visa
+                                            <i class="bi bi-eye" aria-hidden="true"></i>
                                         </button>
                                         <button type="button"
                                                 class="btn btn-outline-secondary btn-sm"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#editBookModal"
+                                                title="Ändra"
+                                                aria-label="Ändra"
                                                 @onclick="() => SelectBook(book)">
-                                            Ändra
+                                            <i class="bi bi-pencil" aria-hidden="true"></i>
                                         </button>
                                     </td>
+                                </tr>
+                            }
+                            @if (FilteredBooks.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-muted">Inga böcker hittades.</td>
                                 </tr>
                             }
                         </tbody>
                     </table>
                 </div>
+
+                @if (TotalPages > 1)
+                {
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-sm"
+                                disabled="@(CurrentPage == 1)"
+                                @onclick="() => _page = CurrentPage - 1">
+                            Föregående
+                        </button>
+                        <small class="text-muted">Sida @CurrentPage av @TotalPages</small>
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-sm"
+                                disabled="@(CurrentPage == TotalPages)"
+                                @onclick="() => _page = CurrentPage + 1">
+                            Nästa
+                        </button>
+                    </div>
+                }
             </div>
         </div>
 
@@ -71,20 +110,20 @@ else
                 <div class="card-body">
                     @if (ViewedBook is { } viewed)
                     {
-                        <h2 class="h4">@viewed.Title</h2>
+                        <h2 class="h4 book-title">@viewed.Title</h2>
                         <p class="text-muted mb-3">
                             @GetAuthorName(viewed.Author)@(viewed.FirstPublicationYear is { } year ? $" · {year}" : "")
                         </p>
 
                         @if (!string.IsNullOrWhiteSpace(viewed.Synopsis))
                         {
-                            <h3 class="h6">Synopsis</h3>
+                            <h3 class="detail-label">Synopsis</h3>
                             <p>@viewed.Synopsis</p>
                         }
 
                         @if (!string.IsNullOrWhiteSpace(viewed.Author.Biography))
                         {
-                            <h3 class="h6">Om författaren</h3>
+                            <h3 class="detail-label">Om författaren</h3>
                             <p class="mb-0">@viewed.Author.Biography</p>
                         }
                     }
@@ -355,6 +394,9 @@ else
     private string? _editErrorMessage;
     private int? _selectedBookId;
     private int? _viewedBookId;
+    private string _searchText = "";
+    private int _page = 1;
+    private const int PageSize = 15;
     private int _selectedAuthorId;
     private string _newAuthorFirstName = "";
     private string _newAuthorLastName = "";
@@ -369,6 +411,18 @@ else
     private bool _isDeleting;
     private bool _confirmingDelete;
     private bool _bookWasDeleted;
+
+    private List<BookDto> FilteredBooks => (_books ?? [])
+        .Where(book => string.IsNullOrWhiteSpace(_searchText) ||
+                       book.Title.Contains(_searchText.Trim(), StringComparison.CurrentCultureIgnoreCase) ||
+                       GetAuthorName(book.Author).Contains(_searchText.Trim(), StringComparison.CurrentCultureIgnoreCase))
+        .ToList();
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(FilteredBooks.Count / (double)PageSize));
+
+    private int CurrentPage => Math.Clamp(_page, 1, TotalPages);
+
+    private IEnumerable<BookDto> PagedBooks => FilteredBooks.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
 
     private BookDto? ViewedBook => _books?.FirstOrDefault(book => book.Id == _viewedBookId);
 
