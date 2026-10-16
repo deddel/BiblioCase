@@ -14,59 +14,86 @@
 }
 else
 {
-    <div class="card shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Alla böcker</span>
-            <button type="button"
-                    class="btn btn-primary btn-sm"
-                    data-bs-toggle="modal"
-                    data-bs-target="#addBookModal">
-                Lägg till bok
-            </button>
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Alla böcker</span>
+                    <button type="button"
+                            class="btn btn-primary btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addBookModal">
+                        Lägg till bok
+                    </button>
+                </div>
+
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Titel</th>
+                                <th>Författare</th>
+                                <th>År</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var book in _books)
+                            {
+                                <tr class="@(book.Id == _viewedBookId ? "table-active" : null)">
+                                    <td>@book.Title</td>
+                                    <td>@GetAuthorName(book.Author)</td>
+                                    <td>@(book.FirstPublicationYear?.ToString() ?? "")</td>
+                                    <td class="text-end text-nowrap">
+                                        <button type="button"
+                                                class="btn btn-outline-primary btn-sm"
+                                                @onclick="() => _viewedBookId = book.Id">
+                                            Visa
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-outline-secondary btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editBookModal"
+                                                @onclick="() => SelectBook(book)">
+                                            Ändra
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
-        <div class="card-body p-0">
-            <table class="table table-striped mb-0">
-                <thead>
-                    <tr>
-                        <th>Titel</th>
-                        <th>Författare</th>
-                        <th>Utgivningsår</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var book in _books)
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    @if (ViewedBook is { } viewed)
                     {
-                        <tr>
-                            <td>
-                                <div>@book.Title</div>
-                                @if (!string.IsNullOrWhiteSpace(book.Synopsis))
-                                {
-                                    <small class="text-muted">@book.Synopsis</small>
-                                }
-                            </td>
-                            <td>
-                                <div>@GetAuthorName(book.Author)</div>
-                                @if (!string.IsNullOrWhiteSpace(book.Author.Biography))
-                                {
-                                    <small class="text-muted">@book.Author.Biography</small>
-                                }
-                            </td>
-                            <td>@(book.FirstPublicationYear?.ToString() ?? "")</td>
-                            <td class="text-end">
-                                <button type="button"
-                                        class="btn btn-outline-primary btn-sm"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#editBookModal"
-                                        @onclick="() => SelectBook(book)">
-                                    Ändra
-                                </button>
-                            </td>
-                        </tr>
+                        <h2 class="h4">@viewed.Title</h2>
+                        <p class="text-muted mb-3">
+                            @GetAuthorName(viewed.Author)@(viewed.FirstPublicationYear is { } year ? $" · {year}" : "")
+                        </p>
+
+                        @if (!string.IsNullOrWhiteSpace(viewed.Synopsis))
+                        {
+                            <h3 class="h6">Synopsis</h3>
+                            <p>@viewed.Synopsis</p>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(viewed.Author.Biography))
+                        {
+                            <h3 class="h6">Om författaren</h3>
+                            <p class="mb-0">@viewed.Author.Biography</p>
+                        }
                     }
-                </tbody>
-            </table>
+                    else
+                    {
+                        <p class="mb-0">Välj en bok för att se information här.</p>
+                    }
+                </div>
+            </div>
         </div>
     </div>
 }
@@ -327,6 +354,7 @@ else
     private string? _errorMessage;
     private string? _editErrorMessage;
     private int? _selectedBookId;
+    private int? _viewedBookId;
     private int _selectedAuthorId;
     private string _newAuthorFirstName = "";
     private string _newAuthorLastName = "";
@@ -341,6 +369,8 @@ else
     private bool _isDeleting;
     private bool _confirmingDelete;
     private bool _bookWasDeleted;
+
+    private BookDto? ViewedBook => _books?.FirstOrDefault(book => book.Id == _viewedBookId);
 
     protected override async Task OnInitializedAsync()
     {

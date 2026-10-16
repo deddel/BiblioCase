@@ -161,7 +161,11 @@ app.MapDelete("/authors/{id:int}", async (int id, DeleteAuthorHandler handler) =
     return result switch
     {
         DeleteAuthorResult.NotFound => Results.NotFound(),
-        DeleteAuthorResult.InUse => Results.Conflict("Författaren har böcker kopplade till sig och kan inte tas bort."),
+        DeleteAuthorResult.InUse => Results.Problem(
+            statusCode: StatusCodes.Status409Conflict,
+            title: "Author is in use",
+            detail: "The author has books and cannot be deleted.",
+            type: "author-in-use"),
         _ => Results.NoContent()
     };
 });
