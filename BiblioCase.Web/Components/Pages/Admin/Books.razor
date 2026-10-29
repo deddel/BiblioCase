@@ -1,0 +1,650 @@
+@inject IHttpClientFactory HttpClientFactory
+
+@page "/admin/books"
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+
+
+<PageTitle>Böcker</PageTitle>
+
+<h1>Böcker</h1>
+
+@if (_books == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Alla böcker</span>
+                    <button type="button"
+                            class="btn btn-primary btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addBookModal">
+                        Lägg till bok
+                    </button>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="p-2 border-bottom">
+                        <input type="search"
+                               class="form-control form-control-sm"
+                               placeholder="Sök på titel eller författare"
+                               aria-label="Sök böcker"
+                               @bind="_searchText"
+                               @bind:event="oninput"
+                               @bind:after="() => _page = 1" />
+                    </div>
+
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Titel</th>
+                                <th>Författare</th>
+                                <th>År</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var book in PagedBooks)
+                            {
+                                <tr class="@(book.Id == _viewedBookId ? "table-active" : null)">
+                                    <td>@book.Title</td>
+                                    <td>@GetAuthorName(book.Author)</td>
+                                    <td>@(book.FirstPublicationYear?.ToString() ?? "")</td>
+                                    <td class="text-end text-nowrap">
+                                        <button type="button"
+                                                class="btn btn-outline-primary btn-sm"
+                                                title="Visa"
+                                                aria-label="Visa"
+                                                @onclick="() => _viewedBookId = book.Id">
+                                            <i class="bi bi-eye" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button"
+                                                class="btn btn-outline-secondary btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editBookModal"
+                                                title="Ändra"
+                                                aria-label="Ändra"
+                                                @onclick="() => SelectBook(book)">
+                                            <i class="bi bi-pencil" aria-hidden="true"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                            @if (FilteredBooks.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-muted">Inga böcker hittades.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (TotalPages > 1)
+                {
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-sm"
+                                disabled="@(CurrentPage == 1)"
+                                @onclick="() => _page = CurrentPage - 1">
+                            Föregående
+                        </button>
+                        <small class="text-muted">Sida @CurrentPage av @TotalPages</small>
+                        <button type="button"
+                                class="btn btn-outline-secondary btn-sm"
+                                disabled="@(CurrentPage == TotalPages)"
+                                @onclick="() => _page = CurrentPage + 1">
+                            Nästa
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    @if (ViewedBook is { } viewed)
+                    {
+                        <h2 class="h4 book-title">@viewed.Title</h2>
+                        <p class="text-muted mb-3">
+                            @GetAuthorName(viewed.Author)@(viewed.FirstPublicationYear is { } year ? $" · {year}" : "")
+                        </p>
+
+                        @if (!string.IsNullOrWhiteSpace(viewed.Synopsis))
+                        {
+                            <h3 class="detail-label">Synopsis</h3>
+                            <p>@viewed.Synopsis</p>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(viewed.Author.Biography))
+                        {
+                            <h3 class="detail-label">Om författaren</h3>
+                            <p class="mb-0">@viewed.Author.Biography</p>
+                        }
+                    }
+                    else
+                    {
+                        <p class="mb-0">Välj en bok för att se information här.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="modal fade" id="addBookModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Lägg till bok</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+                @if (!string.IsNullOrWhiteSpace(_errorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">@_errorMessage</div>
+                }
+
+                <div class="mb-3">
+                    <label for="bookTitle" class="form-label">Titel</label>
+                    <input id="bookTitle"
+                           class="form-control"
+                           @bind="_newBook.Title"
+                           disabled="@_isSaving" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="bookSynopsis" class="form-label">Synopsis</label>
+                    <textarea id="bookSynopsis"
+                              class="form-control"
+                              rows="3"
+                              @bind="_newBook.Synopsis"
+                              disabled="@_isSaving"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="bookPublicationYear" class="form-label">Första utgivningsår</label>
+                    <InputNumber id="bookPublicationYear"
+                                 class="form-control"
+                                 @bind-Value="_newBook.FirstPublicationYear"
+                                 disabled="@_isSaving" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="selectedAuthorId" class="form-label">Välj befintlig författare</label>
+                    <select id="selectedAuthorId"
+                            class="form-select"
+                            @bind="_selectedAuthorId"
+                            disabled="@_isSaving">
+                        <option value="0">-- Välj författare --</option>
+                        @foreach (var author in _authors)
+                        {
+                            <option value="@author.Id">@GetAuthorName(author)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="newAuthorFirstName" class="form-label">Eller skriv in ny författare</label>
+                    <input id="newAuthorFirstName"
+                           class="form-control"
+                           @bind="_newAuthorFirstName"
+                           placeholder="Författarens förnamn"
+                           disabled="@(_isSaving || _selectedAuthorId != 0)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="newAuthorLastName" class="form-label">Efternamn</label>
+                    <input id="newAuthorLastName"
+                           class="form-control"
+                           @bind="_newAuthorLastName"
+                           placeholder="Författarens efternamn"
+                           disabled="@(_isSaving || _selectedAuthorId != 0)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="newAuthorBiography" class="form-label">Författarbiografi</label>
+                    <textarea id="newAuthorBiography"
+                              class="form-control"
+                              rows="3"
+                              @bind="_newAuthorBiography"
+                              disabled="@(_isSaving || _selectedAuthorId != 0)"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Avbryt
+                </button>
+
+                <button type="button"
+                        class="btn btn-primary"
+                        @onclick="CreateBookAsync"
+                        disabled="@_isSaving">
+                    @(_isSaving ? "Sparar..." : "Spara bok")
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editBookModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Visa/redigera bok</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body">
+                @if (!string.IsNullOrWhiteSpace(_editErrorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">@_editErrorMessage</div>
+                }
+
+                @if (_bookWasDeleted)
+                {
+                    <div class="alert alert-success mb-0" role="alert">Boken har tagits bort.</div>
+                }
+
+                else
+                {
+                    <div class="mb-3">
+                        <label for="editBookTitle" class="form-label">Titel</label>
+                        <input id="editBookTitle"
+                               class="form-control"
+                               @bind="_editedBook.Title"
+                               disabled="@_isUpdating" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editBookSynopsis" class="form-label">Synopsis</label>
+                        <textarea id="editBookSynopsis"
+                                  class="form-control"
+                                  rows="3"
+                                  @bind="_editedBook.Synopsis"
+                                  disabled="@_isUpdating"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editBookPublicationYear" class="form-label">Första utgivningsår</label>
+                        <InputNumber id="editBookPublicationYear"
+                                     class="form-control"
+                                     @bind-Value="_editedBook.FirstPublicationYear"
+                                     disabled="@_isUpdating" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editBookAuthor" class="form-label">Välj befintlig författare</label>
+                        <select id="editBookAuthor"
+                                class="form-select"
+                                @bind="_selectedEditAuthorId"
+                                @bind:after="OnEditAuthorChanged"
+                                disabled="@_isUpdating">
+                            <option value="0">-- Välj författare --</option>
+                            @foreach (var author in _authors)
+                            {
+                                <option value="@author.Id">@GetAuthorName(author)</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editNewAuthorFirstName" class="form-label">Eller skriv in ny författare</label>
+                        <input id="editNewAuthorFirstName"
+                               class="form-control"
+                               @bind="_editNewAuthorFirstName"
+                               placeholder="Författarens förnamn"
+                               disabled="@(_isUpdating || _selectedEditAuthorId != 0)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="editNewAuthorLastName" class="form-label">Efternamn</label>
+                        <input id="editNewAuthorLastName"
+                               class="form-control"
+                               @bind="_editNewAuthorLastName"
+                               placeholder="Författarens efternamn"
+                               disabled="@(_isUpdating || _selectedEditAuthorId != 0)" />
+                    </div>
+
+                    @if (_selectedEditAuthorId != 0)
+                    {
+                        <div class="mb-3">
+                            <label for="editAuthorBiography" class="form-label">Författarbiografi</label>
+                            <textarea id="editAuthorBiography"
+                                      class="form-control"
+                                      rows="3"
+                                      @bind="_editAuthorBiography"
+                                      disabled="@_isUpdating"></textarea>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <label for="editNewAuthorBiography" class="form-label">Författarbiografi</label>
+                            <textarea id="editNewAuthorBiography"
+                                      class="form-control"
+                                      rows="3"
+                                      @bind="_editNewAuthorBiography"
+                                      disabled="@_isUpdating"></textarea>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="modal-footer">
+                @if (_bookWasDeleted)
+                {
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Stäng
+                    </button>
+                }
+                else
+                {
+                    <button type="button"
+                            class="btn btn-outline-danger me-auto"
+                            @onclick="DeleteBookAsync"
+                            disabled="@(_isUpdating || _isDeleting)">
+                        @(_confirmingDelete ? "Bekräfta borttagning" : "Ta bort bok")
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal"
+                            disabled="@(_isUpdating || _isDeleting)">
+                        Avbryt
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-primary"
+                            @onclick="UpdateBookAsync"
+                            disabled="@(_isUpdating || _isDeleting)">
+                        @(_isUpdating ? "Sparar..." : "Spara ändringar")
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<BookDto>? _books;
+    private List<AuthorDto> _authors = [];
+    private CreateBookRequest _newBook = new();
+    private UpdateBookRequest _editedBook = new();
+    private string? _errorMessage;
+    private string? _editErrorMessage;
+    private int? _selectedBookId;
+    private int? _viewedBookId;
+    private string _searchText = "";
+    private int _page = 1;
+    private const int PageSize = 15;
+    private int _selectedAuthorId;
+    private string _newAuthorFirstName = "";
+    private string _newAuthorLastName = "";
+    private string _newAuthorBiography = "";
+    private int _selectedEditAuthorId;
+    private string _editAuthorBiography = "";
+    private string _editNewAuthorFirstName = "";
+    private string _editNewAuthorLastName = "";
+    private string _editNewAuthorBiography = "";
+    private bool _isSaving;
+    private bool _isUpdating;
+    private bool _isDeleting;
+    private bool _confirmingDelete;
+    private bool _bookWasDeleted;
+
+    private List<BookDto> FilteredBooks => (_books ?? [])
+        .Where(book => string.IsNullOrWhiteSpace(_searchText) ||
+                       book.Title.Contains(_searchText.Trim(), StringComparison.CurrentCultureIgnoreCase) ||
+                       GetAuthorName(book.Author).Contains(_searchText.Trim(), StringComparison.CurrentCultureIgnoreCase))
+        .ToList();
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(FilteredBooks.Count / (double)PageSize));
+
+    private int CurrentPage => Math.Clamp(_page, 1, TotalPages);
+
+    private IEnumerable<BookDto> PagedBooks => FilteredBooks.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+
+    private BookDto? ViewedBook => _books?.FirstOrDefault(book => book.Id == _viewedBookId);
+
+    protected override async Task OnInitializedAsync()
+    {
+        HttpClient client = HttpClientFactory.CreateClient("BiblioCase.Api");
+
+        _books = await client.GetFromJsonAsync<List<BookDto>>("books");
+        _authors = await client.GetFromJsonAsync<List<AuthorDto>>("authors") ?? [];
+    }
+
+    private async Task CreateBookAsync()
+    {
+        _errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(_newBook.Title))
+        {
+            _errorMessage = "Fyll i titel.";
+            return;
+        }
+
+        if (_selectedAuthorId == 0 &&
+            (string.IsNullOrWhiteSpace(_newAuthorFirstName) || string.IsNullOrWhiteSpace(_newAuthorLastName)))
+        {
+            _errorMessage = "Välj en befintlig författare eller fyll i för- och efternamn.";
+            return;
+        }
+
+        _newBook.AuthorId = _selectedAuthorId == 0 ? null : _selectedAuthorId;
+        _newBook.NewAuthorFirstName =
+            string.IsNullOrWhiteSpace(_newAuthorFirstName) ? null : _newAuthorFirstName;
+
+        _newBook.NewAuthorLastName =
+            string.IsNullOrWhiteSpace(_newAuthorLastName) ? null : _newAuthorLastName;
+        _newBook.NewAuthorBiography =
+            string.IsNullOrWhiteSpace(_newAuthorBiography) ? null : _newAuthorBiography;
+
+        _isSaving = true;
+
+        try
+        {
+            HttpClient client = HttpClientFactory.CreateClient("BiblioCase.Api");
+            HttpResponseMessage response = await client.PostAsJsonAsync("books", _newBook);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _errorMessage = "Boken kunde inte sparas.";
+                return;
+            }
+
+            BookDto? createdBook = await response.Content.ReadFromJsonAsync<BookDto>();
+
+            if (createdBook is not null)
+            {
+                _books ??= [];
+                _books.Add(createdBook);
+
+                if (_authors.All(author => author.Id != createdBook.Author.Id))
+                {
+                    _authors.Add(createdBook.Author);
+                }
+            }
+
+            _newBook = new();
+            _selectedAuthorId = 0;
+            _newAuthorFirstName = "";
+            _newAuthorLastName = "";
+            _newAuthorBiography = "";
+        }
+        catch (HttpRequestException)
+        {
+            _errorMessage = "Kunde inte kontakta API:et.";
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void SelectBook(BookDto book)
+    {
+        _selectedBookId = book.Id;
+        _selectedEditAuthorId = book.Author.Id;
+        _editAuthorBiography = book.Author.Biography ?? "";
+        _editNewAuthorFirstName = "";
+        _editNewAuthorLastName = "";
+        _editNewAuthorBiography = "";
+        _editedBook = new UpdateBookRequest
+        {
+            Title = book.Title,
+            Synopsis = book.Synopsis,
+            FirstPublicationYear = book.FirstPublicationYear,
+            AuthorId = _selectedEditAuthorId == 0 ? null : _selectedEditAuthorId,
+        };
+        _editErrorMessage = null;
+        _confirmingDelete = false;
+        _bookWasDeleted = false;
+    }
+
+    private static string GetAuthorName(AuthorDto author)
+    {
+        return string.Join(' ', new[] { author.FirstName, author.LastName }
+            .Where(name => !string.IsNullOrWhiteSpace(name)));
+    }
+
+    private void OnEditAuthorChanged()
+{
+    if (_selectedEditAuthorId == 0)
+    {
+        _editAuthorBiography = "";
+        return;
+    }
+
+    AuthorDto? author = _authors.FirstOrDefault(a => a.Id == _selectedEditAuthorId);
+
+    _editAuthorBiography = author?.Biography ?? "";
+}
+
+    private async Task UpdateBookAsync()
+    {
+        if (_selectedBookId is null)
+        {
+            return;
+        }
+
+        _editErrorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(_editedBook.Title))
+        {
+            _editErrorMessage = "Fyll i titel.";
+            return;
+        }
+
+        if (_selectedEditAuthorId == 0 &&
+            (string.IsNullOrWhiteSpace(_editNewAuthorFirstName) ||
+             string.IsNullOrWhiteSpace(_editNewAuthorLastName)))
+        {
+            _editErrorMessage = "Välj en befintlig författare eller fyll i för- och efternamn.";
+            return;
+        }
+
+        _editedBook.AuthorId = _selectedEditAuthorId == 0 ? null : _selectedEditAuthorId;
+        _editedBook.AuthorBiography = _selectedEditAuthorId == 0 ? null : _editAuthorBiography;
+        _editedBook.NewAuthorFirstName = string.IsNullOrWhiteSpace(_editNewAuthorFirstName) ? null : _editNewAuthorFirstName;
+        _editedBook.NewAuthorLastName = string.IsNullOrWhiteSpace(_editNewAuthorLastName) ? null : _editNewAuthorLastName;
+        _editedBook.NewAuthorBiography = string.IsNullOrWhiteSpace(_editNewAuthorBiography) ? null : _editNewAuthorBiography;
+
+        _isUpdating = true;
+
+        try
+        {
+            HttpClient client = HttpClientFactory.CreateClient("BiblioCase.Api");
+            HttpResponseMessage response = await client.PutAsJsonAsync($"books/{_selectedBookId}", _editedBook);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _editErrorMessage = "Boken kunde inte uppdateras.";
+                return;
+            }
+
+            BookDto? updatedBook = await response.Content.ReadFromJsonAsync<BookDto>();
+            int index = _books?.FindIndex(book => book.Id == _selectedBookId) ?? -1;
+
+            if (updatedBook is not null && index >= 0)
+            {
+                _books![index] = updatedBook;
+
+                if (_authors.All(author => author.Id != updatedBook.Author.Id))
+                {
+                    _authors.Add(updatedBook.Author);
+                }
+            }
+        }
+        catch (HttpRequestException)
+        {
+            _editErrorMessage = "Kunde inte kontakta API:et.";
+        }
+        finally
+        {
+            _isUpdating = false;
+        }
+    }
+
+    private async Task DeleteBookAsync()
+    {
+        if (!_confirmingDelete)
+        {
+            _confirmingDelete = true;
+            return;
+        }
+
+        if (_selectedBookId is null)
+        {
+            return;
+        }
+
+        _editErrorMessage = null;
+        _isDeleting = true;
+
+        try
+        {
+            HttpClient client = HttpClientFactory.CreateClient("BiblioCase.Api");
+            HttpResponseMessage response = await client.DeleteAsync($"books/{_selectedBookId}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _editErrorMessage = "Boken kunde inte tas bort.";
+                return;
+            }
+
+            _books?.RemoveAll(book => book.Id == _selectedBookId);
+            _bookWasDeleted = true;
+        }
+        catch (HttpRequestException)
+        {
+            _editErrorMessage = "Kunde inte kontakta API:et.";
+        }
+        finally
+        {
+            _isDeleting = false;
+        }
+    }
+}

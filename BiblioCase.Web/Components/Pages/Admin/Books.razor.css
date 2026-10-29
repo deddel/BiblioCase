@@ -1,0 +1,18 @@
+.btn-primary {
+    background-color: var(--bc-accent);
+    border-color: var(--bc-accent);
+}
+
+.book-title {
+    font-weight: 700;
+    color: #252525;
+}
+
+.detail-label {
+    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--bc-accent);
+}
